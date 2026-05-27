@@ -252,6 +252,30 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #4a4a8a
 .eopt.sel, .eopt:hover { border-color: #4a4a8a; background: #eeeeff; }
 .two-col { display: flex; gap: 10px; }
 .two-col .fr { flex: 1; }
+@media (max-width: 768px) {
+  .months-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+  }
+
+  .month-hdr {
+    font-size: 12px;
+    padding: 10px 4px;
+  }
+
+  .sab-box {
+    min-height: 100px;
+    padding: 6px;
+  }
+
+  .sab-num {
+    font-size: 13px;
+  }
+
+  .sab-body {
+    font-size: 11px;
+  }
+}
 </style>
 </head>
 <body>
