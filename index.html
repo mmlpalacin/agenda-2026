@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Agenda del Equipo</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #f4f4f8; color: #1a1a2e; min-height: 100vh; }
+
+/* ── TOAST ─────────────────────────────────────────────── */
+#toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a2e; color: #fff; padding: 10px 22px; border-radius: 8px; font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+#toast.show { opacity: 1; }
+
+/* ── LOADING OVERLAY ────────────────────────────────────── */
+#loading { position: fixed; inset: 0; background: rgba(26,26,46,0.55); z-index: 200; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; }
+#loading.hidden { display: none; }
+.spinner { width: 36px; height: 36px; border: 3px solid rgba(255,255,255,0.2); border-top-color: #a5a5f0; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-txt { color: #fff; font-size: 14px; }
+
+/* ── BANNER TOTALMENTE RENOVADO Y VIBRANTE ──────────────── */
+#banner { 
+  background: #14532d; /* ¡Cambiado! Un verde bosque profundo, vivo y con mucha identidad */
+  color: #e2e8f0; 
+  padding: 14px 20px; 
+  display: flex; 
+  align-items: center; 
+  gap: 16px; 
+  border-bottom: 3px solid #4ade80; /* Línea inferior verde lima para conectar con el diseño */
+}
+.b-lbl { 
+  font-size: 11px; 
+  color: #4ade80; /* Texto de etiqueta en verde claro brillante */
+  text-transform: uppercase; 
+  letter-spacing: 0.08em; 
+  margin-bottom: 3px; 
+  font-weight: 700;
+}
+.b-evt { 
+  font-size: 16px; /* Evento un toque más grande */
+  color: #ffffff; 
+  font-weight: 600; 
+}
+
+/* ── CUENTA REGRESIVA DESTACADA ("12 DÍAS") ── */
+.b-cd { 
+  margin-left: auto; 
+  background: #22c55e; /* Usamos el mismo verde vivo central para unificar la paleta */
+  border: 2px solid #4ade80; /* Borde más brillante que le da relieve */
+  border-radius: 12px; /* Bordes bien redondeados y amigables */
+  padding: 8px 18px; 
+  text-align: center; 
+  box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); /* Un destello sutil de luz verde */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: 85px;
+  transition: transform 0.2s;
+}
+/* Efecto de pulso divertido al pasar el mouse por encima */
+.b-cd:hover {
+  transform: scale(1.05);
+}
+.b-cd .n { 
+  font-size: 28px; /* ¡Números gigantes para que sea el rey del banner! */
+  font-weight: 900; /* Super grueso e impactante */
+  color: #ffffff; /* Blanco puro para máximo contraste */
+  line-height: 1; 
+  font-family: system-ui, sans-serif;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.b-cd .u { 
+  font-size: 11px; 
+  color: #f0fdf4; /* Texto "días" en un tono blanquecino/verdoso muy limpio */
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+/* ── NAV ────────────────────────────────────────────────── */
+#nav { display: flex; gap: 4px; padding: 10px 14px; background: #fff; border-bottom: 1px solid #e0e0f0; flex-wrap: wrap; }
+.nav-btn { padding: 6px 16px; font-size: 13px; border: 1px solid #d0d0e8; border-radius: 8px; background: transparent; color: #555; cursor: pointer; }
+.nav-btn:hover { background: #f0f0f8; }
+.nav-btn.active { background: #a2ff7c; color: #3d3c3c; border-color: #92d775; }
+
+/* ── MAIN ───────────────────────────────────────────────── */
+#main { padding: 14px; max-width: 1400px; margin: 0 auto; }
+.module { display: none; }
+.module.visible { display: block; }
+.sec-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+.sec-title { font-size: 18px; font-weight: 700; color: #1e3a1e; }
+.sec-sub { font-size: 12px; color: #666; margin-top: 2px; }
+
+/* ── BUTTONS ────────────────────────────────────────────── */
+.btn { padding: 7px 14px; font-size: 13px; border: 1px solid #d0d0e8; border-radius: 8px; background: #fff; color: #1a1a2e; cursor: pointer; }
+.btn:hover { background: #f0f0f8; }
+.btn.primary { background: #2d9500; color: #fff; border-color: #4a7037; font-weight: 600; }
+.btn.primary:hover { background: #1c5e00; }
+.btn.danger { color: #c0392b; border-color: #e0b0b0; background: #fff; }
+.btn.danger:hover { background: #fdf0f0; }
+.btn.warn { background: #fffbe0; border-color: #e0c040; color: #7a5900; }
+.btn.warn:hover { background: #fff3b0; }
+.btn.small { padding: 3px 9px; font-size: 11px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── CALENDARIO ANUAL (VERDE VIBRANTE - ETAPA PRE) ───── */
+.cal-container {
+  background: #ffffff;
+  border: 3px solid #2d9500; /* Borde verde lima brillante */
+  border-radius: 12px;
+  overflow-x: auto;
+  box-shadow: 0 6px 25px rgba(74, 222, 128, 0.15); /* Sombra con un toque verde */
+  margin-top: 12px;
+}
+.months-grid {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(115px, 1fr));
+  width: 100%;
+  background: #cbd5e1; /* Gris claro y limpio para las líneas divisorias */
+  gap: 1px; 
+}
+.month-hdr {
+  background: #2d9500; /* ¡Verde vibrante y lleno de vida! (Glow tipo Exploradores) */
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800; /* Letras más marcadas */
+  text-align: center;
+  padding: 14px 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15); /* Le da relieve al texto */
+}
+
+.sab-box {
+  background: #fffdf9; /* Un blanco cálido, más amigable */
+  min-height: 145px; 
+  padding: 8px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  transition: all 0.2s ease-in-out;
+}
+/* Efecto hover divertido al pasar el mouse por las celdas */
+.sab-box:hover { 
+  background: #f0fdf4; /* Fondo verde agua super clarito */
+  z-index: 10;
+  transform: scale(1.02); /* Pequeño salto de animación */
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+}
+
+.sab-num {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1e6102; /* Número en verde oscuro para combinar con el marco */
+  text-align: right;
+  width: 100%;
+  margin-bottom: 6px;
+  font-family: system-ui, sans-serif;
+}
+.sab-body {
+  flex: 1;
+  font-size: 12px;
+  color: #0f172a; /* Texto principal bien oscuro para lectura óptima */
+  line-height: 1.4;
+  cursor: pointer;
+  word-break: break-word;
+  font-weight: 600; /* Texto un poquito más grueso para resaltar las actividades */
+}
+.sab-empty {
+  color: transparent; 
+  user-select: none;
+}
+.sab-edit-hint {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  font-size: 12px;
+  color: #2d9500;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.sab-box:hover .sab-edit-hint { opacity: 1; }
+
+/* ── DISEÑO LLENO DE ENERGÍA PARA LAS ETIQUETAS ── */
+.tag-receso {
+  background-color: #2d9500; /* Verde pichón/receso super vivo */
+  color: #e8e8e8;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  font-size: 11px;
+  margin-top: 5px;
+  border: 1px solid #2d9500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.tag-partido {
+  background-color: #bae6fd; /* Azul cielo brillante */
+  color: #0369a1;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  font-size: 11px;
+  margin-top: 5px;
+  border: 1px solid #7dd3fc;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* ── SEMANAL ────────────────────────────────────────────── */
+.week-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.week-lbl { flex: 1; text-align: center; font-size: 14px; font-weight: 600; }
+.matrix-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid #e0e0f0; }
+table.matrix { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 600px; }
+table.matrix th { padding: 8px 6px; text-align: center; font-weight: 600; background: #2d9500; color: #ffffff; border: 1px solid #195400; font-size: 11px; }
+table.matrix th.col-member { background: #2d9500; }
+table.matrix td { padding: 4px; border: 1px solid #ebebf5; vertical-align: top; min-width: 90px; background: #fff; }
+table.matrix td.member-name { font-weight: 600; font-size: 12px; background: #e1f9d7; padding: 6px 10px; white-space: nowrap; border-right: 1px solid #ebebf5; }
+.block { border-radius: 5px; padding: 3px 6px; margin-bottom: 2px; font-size: 10px; cursor: pointer; line-height: 1.3; transition: opacity 0.15s; }
+.block:hover { opacity: 0.8; }
+.block.base { background: #e8e8f8; color: #3c3c8a; border: 1px solid #c8c8e8; }
+.block.reunion { background: #fff8e0; color: #7a5900; border: 1px solid #e0c040; font-weight: 600; }
+.block.excepcion { background: #fff0e8; color: #7a3010; border: 1px solid #f0b090; }
+.block.suspendido { background: #f5f5f5; color: #aaa; border: 1px dashed #ccc; text-decoration: line-through; font-size: 9px; }
+.add-slot { display: block; text-align: center; color: #aaa; font-size: 10px; margin-top: 3px; cursor: pointer; padding: 2px; border-radius: 4px; }
+.add-slot:hover { background: #f0f0f8; color: #4a4a8a; }
+
+/* ── RUTINAS ────────────────────────────────────────────── */
+.rutina-item { background: #fff; border: 1px solid #e0e0f0; border-radius: 8px; padding: 9px 12px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tag { background: #f0f0f8; border-radius: 4px; padding: 2px 8px; font-size: 11px; color: #555; }
+
+/* ── MODAL ──────────────────────────────────────────────── */
+#overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; }
+#overlay.open { display: flex; }
+#modal { background: #fff; border-radius: 12px; border: 1px solid #d0d0e8; padding: 20px 22px; width: 380px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+#modal h3 { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+.fr { margin-bottom: 10px; }
+.fl { font-size: 11px; color: #888; margin-bottom: 4px; display: block; }
+input[type=text], input[type=time], input[type=date], select, textarea {
+  border: 1px solid #d0d0e8; border-radius: 8px; padding: 7px 10px; font-size: 13px;
+  background: #fff; color: #1a1a2e; width: 100%;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: #4a4a8a; box-shadow: 0 0 0 2px rgba(74,74,138,0.12); }
+.mactions { display: flex; gap: 8px; margin-top: 14px; justify-content: flex-end; flex-wrap: wrap; }
+.epicker { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+.eopt { font-size: 18px; cursor: pointer; padding: 3px; border-radius: 4px; border: 2px solid transparent; }
+.eopt.sel, .eopt:hover { border-color: #4a4a8a; background: #eeeeff; }
+.two-col { display: flex; gap: 10px; }
+.two-col .fr { flex: 1; }
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="spinner"></div><div class="loading-txt">Conectando con Google Sheets...</div></div>
+<div id="toast"></div>
+
+<div id="app" style="display:none;">
+  <div id="banner">
+    <div><div class="b-lbl">📅 Próximo evento</div><div class="b-evt" id="b-name">—</div></div>
+    <div class="b-cd"><div class="n" id="b-days">—</div><div class="u">días</div></div>
+  </div>
+  <div id="nav">
+    <button class="nav-btn active" onclick="showMod('cal',this)">📆 Calendario anual</button>
+    <button class="nav-btn" onclick="showMod('weekly',this)">📊 Disponibilidad semanal</button>
+    <button class="nav-btn" onclick="showMod('rutinas',this)">🔁 Rutinas base</button>
+  </div>
+  <div id="main">
+    <div id="mod-cal" class="module visible">
+      <div class="sec-header">
+        <div><div class="sec-title" id="calendar-title">Sábados</div><div class="sec-sub">Hacé clic en un sábado para asignar o editar un evento</div></div>
+        <button class="btn primary" onclick="openNewCal()">+ Nuevo evento</button>
+      </div>
+      <div class="cal-container">
+        <div class="months-grid" id="months-grid"></div>
+      </div>
+    </div>
+    <div id="mod-weekly" class="module">
+      <div class="sec-header">
+        <div><div class="sec-title">Disponibilidad del equipo</div><div class="sec-sub">Vista semanal — clic en un bloque base para suspenderlo ese día</div></div>
+        <button class="btn warn" onclick="buscarMejorReunion()">👥 Encontrar mejor reunión</button>      </div>
+      <div class="week-nav">
+        <button class="btn" onclick="changeWeek(-1)">← Anterior</button>
+        <div class="week-lbl" id="week-lbl"></div>
+        <button class="btn" onclick="changeWeek(1)">Siguiente →</button>
+      </div>
+      <div class="matrix-wrap"><table class="matrix" id="matrix"></table></div>
+    </div>
+    <div id="mod-rutinas" class="module">
+      <div class="sec-header">
+        <div><div class="sec-title">Rutinas base</div><div class="sec-sub">Se aplican automáticamente en todas las semanas</div></div>
+        <button class="btn primary" onclick="openNewRutina()">+ Nueva rutina</button>
+      </div>
+      <div id="rutinas-list"></div>
+    </div>
+  </div>
+</div>
+
+<div id="overlay" onclick="closeOverlay(event)">
+  <div id="modal"><h3 id="mtitle"></h3><div id="mbody"></div><div class="mactions" id="mactions"></div></div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  CONFIG & STATE
+// ─────────────────────────────────────────────
+const TEAM   = ['Mili','Loli','Kandeee','Antin','Mate','Cande'];
+const DIAS   = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const DKEYS  = ['lun','mar','mie','jue','vie','sab'];
+const MESES  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const EMOJIS = ['🎉','📚','🏃','💼','🎨','🎤','⚽','🍕','🏖️','🎯','💡','🔧','🤝','🎭','🏋️','✈️','🎪','🌟','⚡','🎸','📋','📊','🕯️','🏕️','🎊'];
+
+// URL fija para automatizar la base de datos sin pantallas de carga iniciales
+let API_URL   = 'https://script.google.com/macros/s/AKfycbx4EKrGiLyckiVmRiizuYqEt-klkwyEOuOaXDCCNAp8CLpKz-shstT7KPqyiRCWc3dz/exec';
+let calData   = {};    
+let rutinas   = [];
+let excepciones = [];
+let weekOffset  = 0;
+let selEmoji    = '';
+
+// ─────────────────────────────────────────────
+//  UTILS
+// ─────────────────────────────────────────────
+function toast(msg, dur=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+function setLoading(on, msg='Cargando...') {
+  const el = document.getElementById('loading');
+  el.classList.toggle('hidden', !on);
+  if (on) el.querySelector('.loading-txt').textContent = msg;
+}
+function addDays(d,n) { const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function fmtKey(d) {
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function fmtShort(d) { return d.toLocaleDateString('es-AR',{day:'2-digit',month:'short'}); }
+function getSabados(year) {
+  const s=[]; let d=new Date(year,0,1);
+  while(d.getDay()!==6) d.setDate(d.getDate()+1);
+  while(d.getFullYear()===year){ s.push(new Date(d)); d.setDate(d.getDate()+7); }
+  return s;
+}
+function getWeekStart(offset) {
+  const now=new Date(), day=now.getDay();
+  const mon=new Date(now); mon.setDate(now.getDate()-(day===0?6:day-1)+offset*7); mon.setHours(0,0,0,0); return mon;
+}
+
+// ─────────────────────────────────────────────
+//  API CALLS
+// ─────────────────────────────────────────────
+async function apiGet(params) {
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(`${API_URL}?${qs}`);
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'Error en la API');
+  return json.data;
+}
+
+async function apiPost(payload) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'Error en la API');
+  return json.data;
+}
+
+// ─────────────────────────────────────────────
+//  BOOT
+// ─────────────────────────────────────────────
+async function bootApp() {
+  setLoading(true, 'Conectando con Google Sheets...');
+  try {
+    await loadAll();
+    document.getElementById('app').style.display = 'block';
+    renderCal(); renderWeekly(); renderRutinas(); updateBanner();
+  } catch(err) {
+    toast('❌ No se pudo conectar: ' + err.message, 5000);
+  } finally { setLoading(false); }
+}
+
+async function loadAll() {
+  const [calRaw, rutRaw, excRaw] = await Promise.all([
+    apiGet({action:'getCalendar'}),
+    apiGet({action:'getRutinas'}),
+    apiGet({action:'getAllExcepciones'}),
+  ]);
+  
+  calData = {};
+  (calRaw||[]).forEach(r => {
+    const key = r.ID_Fecha ? r.ID_Fecha.slice(0,10) : null;
+    if (key) calData[key] = { actividad: r.Actividad||'', emoji: r.Emoji||'' };
+  });
+
+  rutinas = (rutRaw || []).map(r => ({
+    id: r.ID_Rutina, 
+    miembro: r.Miembro, 
+    dia: r.Dia_Semana,
+    hi: r.Hora_Inicio || '', // 👈 SIN .slice(0,10). Que pase el texto completo de Google
+    hf: r.Hora_Fin || '',    // 👈 SIN .slice(0,10).
+    desc: r.Descripcion || '',
+  }));
+
+  excepciones = (excRaw||[]).map(e => ({
+    id: e.ID_Excepcion, fecha: e.Fecha_Especifica?.slice(0,10),
+    miembro: e.Miembro, hi: e.Hora_Inicio, hf: e.Hora_Fin,
+    estado: e.Estado, desc: e.Descripcion, tipo: e.Tipo, origen: e.Origen_Rutina,
+  }));
+}
+
+// ─────────────────────────────────────────────
+//  BANNER
+// ─────────────────────────────────────────────
+function updateBanner() {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const prox = Object.entries(calData)
+    .filter(([k,v]) => v.actividad && new Date(k+'T12:00:00') >= hoy)
+    .sort((a,b) => new Date(a[0])-new Date(b[0]))[0];
+  if (!prox) { document.getElementById('b-name').textContent='Sin eventos próximos'; document.getElementById('b-days').textContent='—'; return; }
+  const diff = Math.ceil((new Date(prox[0]+'T12:00:00')-hoy)/86400000);
+  document.getElementById('b-name').textContent = (prox[1].emoji||'') + ' ' + prox[1].actividad.split('\n')[0].slice(0,50);
+  document.getElementById('b-days').textContent = diff;
+}
+
+// ─────────────────────────────────────────────
+//  CALENDARIO ANUAL (ESTILO EXPLORADORES)
+// ─────────────────────────────────────────────
+function renderCal() {
+  const year = new Date().getFullYear();
+  
+  const titleEl = document.getElementById('calendar-title');
+  if (titleEl) titleEl.textContent = `Sábados ${year}`;
+
+  const sabs = getSabados(year);
+  const byMonth = {};
+  const mesesVisibles = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11]; // Marzo a Diciembre
+  
+  mesesVisibles.forEach(mi => { byMonth[mi] = []; });
+
+  sabs.forEach(s => {
+    const m = s.getMonth();
+    if (byMonth[m] !== undefined) {
+      byMonth[m].push(s);
+    }
+  });
+
+  const grid = document.getElementById('months-grid');
+  grid.innerHTML = '';
+
+  // 1. Cabeceras con los nombres de los meses en verde
+  mesesVisibles.forEach(mi => {
+    const hdr = document.createElement('div');
+    hdr.className = 'month-hdr';
+    hdr.textContent = MESES[mi];
+    grid.appendChild(hdr);
+  });
+
+  // 2. Calcular número máximo de filas (semanas)
+  let maxFilas = 0;
+  mesesVisibles.forEach(mi => {
+    if (byMonth[mi].length > maxFilas) maxFilas = byMonth[mi].length;
+  });
+
+  // 3. Renderizado cruzado para formar la grilla perfecta
+  for (let fila = 0; fila < maxFilas; fila++) {
+    mesesVisibles.forEach(mi => {
+      const sabsDelMes = byMonth[mi];
+      const s = sabsDelMes[fila]; 
+
+      const box = document.createElement('div');
+      box.className = 'sab-box';
+
+      if (s) {
+        const key = fmtKey(s);
+        const ev = calData[key];
+        const hasEv = ev && ev.actividad;
+
+        let htmlContenido = '<span class="sab-empty"></span>';
+        if (hasEv) {
+          let textoProcesado = ev.actividad.split('\n').map(l => {
+            if (l.toUpperCase().includes('RECESO')) {
+              return `<span class="tag-receso">${l}</span>`;
+            } else if (l.toUpperCase().includes('VS')) {
+              return `<span class="tag-partido">${l}</span>`;
+            }
+            return `<span style="display:block; margin-bottom:2px;">${l}</span>`;
+          }).join('');
+          
+          htmlContenido = `${ev.emoji ? `<span class="sab-emoji">${ev.emoji}</span> ` : ''}${textoProcesado}`;
+        }
+
+        box.setAttribute('onclick', `openCalModal('${key}')`);
+        box.innerHTML = `
+          <div class="sab-num">${String(s.getDate()).padStart(2, '0')}</div>
+          <div class="sab-body">
+            ${htmlContenido}
+          </div>
+          <span class="sab-edit-hint">✏️</span>
+        `;
+      } else {
+        box.innerHTML = `
+          <div class="sab-num" style="opacity:0;">00</div>
+          <div class="sab-body"><span class="sab-empty"></span></div>
+        `;
+      }
+      grid.appendChild(box);
+    });
+  }
+}
+
+function openNewCal() {
+  selEmoji='';
+  document.getElementById('mtitle').textContent='Nuevo evento de sábado';
+  document.getElementById('mbody').innerHTML=`
+    <div class="fr"><label class="fl">Fecha (debe ser sábado)</label><input type="date" id="mf-fecha"/></div>
+    <div class="fr"><label class="fl">Descripción</label><textarea id="mf-act" rows="3" placeholder="Nombre del evento..."></textarea></div>
+    <div class="fr"><label class="fl">Ícono</label><div class="epicker">${EMOJIS.map(e=>`<span class="eopt" onclick="pickEmoji('${e}',this)">${e}</span>`).join('')}</div></div>`;
+  document.getElementById('mactions').innerHTML=`<button class="btn" onclick="closeOverlay()">Cancelar</button><button class="btn primary" onclick="saveCalNew()">Guardar</button>`;
+  openOverlay();
+}
+
+function openCalModal(key) {
+  const ev = calData[key]||{actividad:'',emoji:''};
+  selEmoji = ev.emoji||'';
+  const d = new Date(key+'T12:00:00');
+  document.getElementById('mtitle').textContent=`Sábado ${d.getDate()} de ${MESES[d.getMonth()]}`;
+  document.getElementById('mbody').innerHTML=`
+    <div class="fr"><label class="fl">Descripción</label><textarea id="mf-act" rows="3">${ev.actividad}</textarea></div>
+    <div class="fr"><label class="fl">Ícono</label><div class="epicker">${EMOJIS.map(e=>`<span class="eopt ${selEmoji===e?'sel':''}" onclick="pickEmoji('${e}',this)">${e}</span>`).join('')}</div></div>`;
+  const delBtn = ev.actividad ? `<button class="btn danger" onclick="doDelCal('${key}')">Eliminar</button>` : '';
+  document.getElementById('mactions').innerHTML=`${delBtn}<button class="btn" onclick="closeOverlay()">Cancelar</button><button class="btn primary" onclick="doSaveCal('${key}')">Guardar</button>`;
+  openOverlay();
+}
+
+function pickEmoji(e,el) {
+  selEmoji=e;
+  document.querySelectorAll('.eopt').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+async function saveCalNew() {
+  const fecha = document.getElementById('mf-fecha').value;
+  const act   = document.getElementById('mf-act').value.trim();
+  if (!fecha||!act) { toast('⚠️ Completá fecha y descripción'); return; }
+  setLoading(true,'Guardando...');
+  try {
+    await apiPost({action:'saveCalEvent', fecha, actividad:act, emoji:selEmoji});
+    calData[fecha] = {actividad:act, emoji:selEmoji};
+    closeOverlay(); renderCal(); updateBanner(); toast('✅ Evento guardado');
+  } catch(e){ toast('❌ '+e.message); } finally{ setLoading(false); }
+}
+
+async function doSaveCal(key) {
+  const act = document.getElementById('mf-act').value.trim();
+  setLoading(true,'Guardando...');
+  try {
+    await apiPost({action:'saveCalEvent', fecha:key, actividad:act, emoji:selEmoji});
+    calData[key] = {actividad:act, emoji:selEmoji};
+    closeOverlay(); renderCal(); updateBanner(); toast('✅ Evento actualizado');
+  } catch(e){ toast('❌ '+e.message); } finally{ setLoading(false); }
+}
+
+async function doDelCal(key) {
+  if (!confirm('¿Eliminar este evento?')) return;
+  setLoading(true,'Eliminando...');
+  try {
+    await apiPost({action:'deleteCalEvent', fecha:key});
+    delete calData[key];
+    closeOverlay(); renderCal(); updateBanner(); toast('🗑️ Evento eliminado');
+  } catch(e){ toast('❌ '+e.message); } finally{ setLoading(false); }
+}
+
+// ─────────────────────────────────────────────
+//  SEMANAL
+// ─────────────────────────────────────────────
+// Función auxiliar interna para limpiar y unificar cualquier formato de hora raro que venga del Excel
+function formatearHoraWeb(horaRaw) {
+  if (horaRaw === undefined || horaRaw === null || horaRaw === '') return '';
+
+  // 1. SI YA ES UN OBJETO DATE DE JAVASCRIPT
+  if (horaRaw instanceof Date && !isNaN(horaRaw)) {
+    let hrs = horaRaw.getHours().toString().padStart(2, '0');
+    let mins = horaRaw.getMinutes().toString().padStart(2, '0');
+    return `${hrs}:${mins}`;
+  }
+
+  let str = horaRaw.toString().trim();
+
+  // 2. CASO FECHA DE SISTEMA DE GOOGLE SHEETS (Ej: "Sat Dec 30 1899 12:30:00...")
+  // Buscamos de forma aislada el patrón de hora dentro de todo ese choclo de texto
+  const regexHora = /(\d{1,2}):(\d{2})/;
+  const coincidencia = str.match(regexHora);
+  if (coincidencia) {
+    let hrs = coincidencia[1].padStart(2, '0');
+    let mins = coincidencia[2];
+    
+    // Si lo que capturó como hora es "18" y minutos "99", es parte del año 1899 y no sirve
+    if (hrs === '18' && mins === '99') {
+      return '';
+    }
+    return `${hrs}:${mins}`;
+  }
+
+  // 3. SI LLEGA TEXTO CON "a.m." o "p.m." DIRECTO
+  if (str.toLowerCase().includes('m.')) {
+    let limpia12 = str.toLowerCase().replace(/p\.m\./g, 'pm').replace(/a\.m\./g, 'am');
+    const esPM = limpia12.includes('pm');
+    const partes = limpia12.replace(/[a-z]/g, '').trim().split(':');
+    if (partes.length >= 2) {
+      let hrs = parseInt(partes[0], 10);
+      let mins = partes[1].trim().padStart(2, '0');
+      if (esPM && hrs < 12) hrs += 12;
+      if (!esPM && hrs === 12) hrs = 0;
+      return `${hrs.toString().padStart(2, '0')}:${mins}`;
+    }
+  }
+
+  // 4. LIMPIEZA ESTÁNDAR POR DESCARTE
+  let limpio = str.toLowerCase().replace('.', ':').replace('hs', '').trim();
+  if (!limpio.includes(':')) {
+    if (limpio.length === 4 && !isNaN(limpio)) {
+      return `${limpio.slice(0,2)}:${limpio.slice(2,4)}`;
+    }
+    return limpio.slice(0, 5);
+  }
+  
+  let [h, m] = limpio.split(':');
+  return `${h.trim().padStart(2, '0')}:${m.trim().padEnd(2, '0').slice(0, 2)}`;
+}
+
+function renderWeekly() {
+  const ws   = getWeekStart(weekOffset);
+  const dias = DKEYS.map((_,i) => addDays(ws, i===5?5:i));
+  document.getElementById('week-lbl').textContent = `${fmtShort(dias[0])} — ${fmtShort(dias[5])}`;
+
+  const thead = `<tr>
+    <th class="col-member" style="min-width:80px;">Integrante</th>
+    ${DIAS.map((d,i)=>`<th>${d}<br><span style="font-weight:400;font-size:10px;opacity:0.7;">${fmtShort(dias[i])}</span></th>`).join('')}
+  </tr>`;
+
+  const tbody = TEAM.map(m => {
+    const cells = DKEYS.map((dk,di) => {
+      const fecha = fmtKey(dias[di]);
+      const bases  = rutinas.filter(r => r.miembro===m && r.dia===dk);
+      const excs   = excepciones.filter(e => e.miembro===m && e.fecha===fecha);
+      const suspIds= new Set(excs.filter(e=>e.tipo==='susp').map(e=>e.origen));
+      const visBases = bases.filter(b => !suspIds.has(b.id));
+
+      const blocks = [
+        ...visBases.map(b => {
+          // Extraemos la hora limpia usando la función renovada
+          let horaIn = formatearHoraWeb(b.hi);
+          let horaFi = formatearHoraWeb(b.hf);
+          let descripcion = b.desc || '';
+
+          // Fallback seguro si la celda viene vacía o rota
+          if (!horaIn) horaIn = '00:00';
+          if (!horaFi) horaFi = '00:00';
+
+          // Limpiamos la descripción por si arrastra texto de la fecha del sistema
+          if (descripcion.includes('1899')) {
+            descripcion = descripcion.replace(/.*?\d{2}:\d{2}:\d{2}.*?\s+/, '').replace(/1899-?/g, '').replace(/-/g, '').trim();
+          }
+
+          return `<div class="block base" title="Clic para suspender solo este día" onclick="doSuspend('${b.id}','${m}','${fecha}')">
+            ${horaIn}–${horaFi} ${descripcion.length > 14 ? descripcion.slice(0, 14) + '…' : descripcion}
+          </div>`;
+        }),
+        ...excs.filter(e=>e.tipo==='susp').map(()=>
+          `<div class="block suspendido">✗ Suspendido</div>`),
+        ...excs.filter(e=>e.tipo!=='susp').map(e=> {
+          let horaIn = formatearHoraWeb(e.hi);
+          let horaFi = formatearHoraWeb(e.hf);
+          if (!horaIn) horaIn = '';
+          if (!horaFi) horaFi = '';
+
+          return `<div class="block ${e.tipo}" onclick="doDelExc('${e.id}','${fecha}')">
+            ${e.tipo==='reunion'?'👥 ':''}${horaIn ? horaIn+'–'+horaFi+' ' : ''}${e.desc.length>14?e.desc.slice(0,14)+'…':e.desc}
+          </div>`;
+        }),
+      ].join('');
+
+      return `<td>${blocks}<span class="add-slot" onclick="openAddExc('${m}','${fecha}')">+ agregar</span></td>`;
+    }).join('');
+    return `<tr><td class="member-name">${m}</td>${cells}</tr>`;
+  }).join('');
+
+  document.getElementById('matrix').innerHTML = `<thead>${thead}</thead><tbody>${tbody}</tbody>`;
+}
+
+function changeWeek(d) { weekOffset+=d; renderWeekly(); }
+
+// ─────────────────────────────────────────────
+//  BUSCAR MEJOR HORARIO DE REUNIÓN
+// ─────────────────────────────────────────────
+
+// Convierte "HH:mm" a minutos desde medianoche
+function horaAMin(h) {
+  if (!h || typeof h !== 'string' || !h.includes(':')) return null;
+  const [hh, mm] = h.split(':').map(Number);
+  return hh * 60 + mm;
+}
+
+// Devuelve true si el integrante está ocupado en [inicioMin, finMin) ese día
+function estaOcupado(miembro, fecha, inicioMin, finMin) {
+  const diaSemana = DKEYS[new Date(fecha + 'T12:00:00').getDay() - 1];
+
+  // Chequeamos rutinas base (salvo suspendidas)
+  const excDia = excepciones.filter(e => e.miembro === miembro && e.fecha === fecha);
+  const suspIds = new Set(excDia.filter(e => e.tipo === 'susp').map(e => e.origen));
+
+  const rutDia = rutinas.filter(r =>
+    r.miembro === miembro &&
+    r.dia === diaSemana &&
+    !suspIds.has(r.id)
+  );
+
+  for (const r of rutDia) {
+    const ri = horaAMin(formatearHoraWeb(r.hi));
+    const rf = horaAMin(formatearHoraWeb(r.hf));
+    if (ri !== null && rf !== null && inicioMin < rf && finMin > ri) return true;
+  }
+
+  // Chequeamos excepciones ocupadas ese día
+  const excOcupadas = excDia.filter(e => e.tipo !== 'susp' && e.estado === 'ocupado');
+  for (const e of excOcupadas) {
+    const ei = horaAMin(formatearHoraWeb(e.hi));
+    const ef = horaAMin(formatearHoraWeb(e.hf));
+    if (ei !== null && ef !== null && inicioMin < ef && finMin > ei) return true;
+  }
+
+  return false;
+}
+
+function buscarMejorReunion() {
+  const DURACION = 90;      // minutos
+  const PASO     = 30;      // granularidad de búsqueda
+  const MIN_HORA = 10 * 60; // 10:00
+  const MAX_HORA = 22 * 60; // 22:00 (inicio máximo)
+
+  const ws = getWeekStart(weekOffset);
+
+  let mejorSlot = null;
+  let mejorLibres = -1;
+  let mejorOcupados = [];
+
+  // Lunes (0) a Viernes (4)
+  for (let di = 0; di <= 4; di++) {
+    const fecha = fmtKey(addDays(ws, di));
+
+    for (let inicio = MIN_HORA; inicio <= MAX_HORA - DURACION; inicio += PASO) {
+      const fin = inicio + DURACION;
+      const libres   = [];
+      const ocupados = [];
+
+      for (const m of TEAM) {
+        if (estaOcupado(m, fecha, inicio, fin)) {
+          ocupados.push(m);
+        } else {
+          libres.push(m);
+        }
+      }
+
+      // Más libres gana; empate → el primero encontrado (más temprano en semana)
+      if (libres.length > mejorLibres) {
+        mejorLibres   = libres.length;
+        mejorOcupados = ocupados;
+        mejorSlot     = { fecha, inicio, fin, libres, ocupados };
+      }
+    }
+  }
+
+  if (!mejorSlot) {
+    toast('❌ No se encontró ningún hueco disponible');
+    return;
+  }
+
+  // Convertir minutos a "HH:mm"
+  const minToStr = m => `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
+  const hiStr = minToStr(mejorSlot.inicio);
+  const hfStr = minToStr(mejorSlot.fin);
+
+  const diaLabel = DIAS[DKEYS.indexOf(DKEYS[new Date(mejorSlot.fecha + 'T12:00:00').getDay() - 1])];
+  const fechaLabel = new Date(mejorSlot.fecha + 'T12:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
+
+  const ocupadosHTML = mejorSlot.ocupados.length
+    ? `<div style="margin-top:10px;padding:8px 10px;background:#fff0e8;border:1px solid #f0b090;border-radius:8px;font-size:12px;color:#7a3010;">
+        ⚠️ <strong>No pueden:</strong> ${mejorSlot.ocupados.join(', ')}
+       </div>`
+    : `<div style="margin-top:10px;padding:8px 10px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;font-size:12px;color:#166534;">
+        🎉 <strong>¡Todos disponibles!</strong>
+       </div>`;
+
+  document.getElementById('mtitle').textContent = '📅 Mejor horario encontrado';
+  document.getElementById('mbody').innerHTML = `
+    <div style="text-align:center;padding:14px 0 8px;">
+      <div style="font-size:22px;font-weight:800;color:#1e3a1e;">${diaLabel} ${fechaLabel}</div>
+      <div style="font-size:32px;font-weight:900;color:#2d9500;margin:6px 0;">${hiStr} – ${hfStr}</div>
+      <div style="font-size:12px;color:#888;">1:30 hs · ${mejorSlot.libres.length} de ${TEAM.length} integrantes libres</div>
+    </div>
+    <div style="padding:8px 10px;background:#f0f4ff;border:1px solid #c0c8f0;border-radius:8px;font-size:12px;color:#1a1a2e;">
+      ✅ <strong>Pueden:</strong> ${mejorSlot.libres.join(', ')}
+    </div>
+    ${ocupadosHTML}
+    <div class="fr" style="margin-top:14px;">
+      <label class="fl">Descripción de la reunión</label>
+      <input type="text" id="mf-reunion-desc" value="Reunión semanal" />
+    </div>`;
+
+  document.getElementById('mactions').innerHTML = `
+    <button class="btn" onclick="closeOverlay()">Cancelar</button>
+    <button class="btn primary" onclick="confirmarReunion('${mejorSlot.fecha}','${hiStr}','${hfStr}')">✅ Confirmar y guardar</button>`;
+
+  openOverlay();
+}
+
+async function confirmarReunion(fecha, hi, hf) {
+  const desc = document.getElementById('mf-reunion-desc').value.trim() || 'Reunión semanal';
+  setLoading(true, 'Guardando reunión...');
+  try {
+    const ops = TEAM
+      .filter(m => !excepciones.some(e => e.miembro === m && e.fecha === fecha && e.tipo === 'reunion'))
+      .map(m => apiPost({ action: 'saveExcepcion', miembro: m, fecha, hi, hf, estado: 'ocupado', desc, tipo: 'reunion' }));
+    await Promise.all(ops);
+    const excRaw = await apiGet({ action: 'getAllExcepciones' });
+    excepciones = (excRaw || []).map(e => ({
+      id: e.ID_Excepcion, fecha: e.Fecha_Especifica?.slice(0, 10),
+      miembro: e.Miembro, hi: e.Hora_Inicio, hf: e.Hora_Fin,
+      estado: e.Estado, desc: e.Descripcion, tipo: e.Tipo, origen: e.Origen_Rutina,
+    }));
+    closeOverlay();
+    renderWeekly();
+    toast('✅ Reunión guardada');
+  } catch (e) { toast('❌ ' + e.message); } finally { setLoading(false); }
+}
+
+async function doSuspend(rutinaId, miembro, fecha) {
+  if (!confirm(`¿Suspender este bloque solo para el ${fecha}?`)) return;
+  setLoading(true,'Guardando excepción...');
+  try {
+    const res = await apiPost({action:'saveExcepcion', miembro, fecha, hi:'', hf:'', estado:'disponible', desc:'Suspendido', tipo:'susp', origenRutina:rutinaId});
+    if (!res.skipped) excepciones.push({id:res.id, fecha, miembro, hi:'', hf:'', estado:'disponible', desc:'Suspendido', tipo:'susp', origen:rutinaId});
+    renderWeekly(); toast('✅ Bloque suspendido para ese día');
+  } catch(e){ toast('❌ '+e.message); } finally{ setLoading(false); }
+}
+
+async function doDelExc(id, fecha) {
+  if (!confirm('¿Eliminar este bloque?')) return;
+  setLoading(true,'Eliminando...');
+  try {
+    await apiPost({action:'deleteExcepcion', id});
+    excepciones = excepciones.filter(e=>e.id!==id);
+    renderWeekly(); toast('🗑️ Bloque eliminado');
+  } catch(e){ toast('❌ '+e.message); } finally{ setLoading(false); }
+}
+
+function openAddExc(miembro, fecha) {
+  document.getElementById('mtitle').textContent=`Agregar bloque — ${miembro}`;
+  document.getElementById('mbody').innerHTML=`
+    <div class="fr"><label class="fl">Descripción</label><input type="text" id="mf-desc" placeholder="Ej: Cursada, Trabajo, Evento..."/></div>
+    <div class="two-col">
+      <div class="fr"><label class="fl">Hora inicio</label><input type="time" id="mf-hi" value="10:00"/></div>
+      <div class="fr"><label class="fl">Hora fin</label><input type="time" id="mf-hf" value="12:00"/></div>
+    </div>
+    <div class="fr"><label class="fl">Tipo</label>
+      <select id="mf-tipo"><option value="excepcion">Ocupado (excepción puntual)</option><option value="reunion">Reunión</option></select>
+    </div>`;
+  document.getElementById('mactions').innerHTML=`<button class="btn" onclick="closeOverlay()">Cancelar</button><button class="btn primary" onclick="doSaveExc('${miembro}','${fecha}')">Guardar</button>`;
+  openOverlay();
+}
+
+async function doSaveExc(miembro, fecha) {
+  const desc  = document.getElementById('mf-desc').value.trim();
+  const hi    = document.getElementById('mf-hi').value;
+  const hf    = document.getElementById('mf-hf').value;
+  const tipo  = document.getElementById('mf-tipo').value;
+  if (!desc) { toast('⚠️ Escribí una descripción'); return; }
+  setLoading(true,'Guardando...');
+  try {
+    const res = await apiPost({action:'saveExcepcion', miembro, fecha, hi, hf, estado:'ocupado', desc, tipo});
+    excepciones.push({id:res.id, fecha, miembro, hi, hf, estado:'ocupado', desc, tipo, origen:''});
+    closeOverlay(); renderWeekly(); toast('✅ Bloque guardado');
+  } catch(e){ toast('❌ '+e.message); } finally{ setLoading(false); }
+}
+
+// ─────────────────────────────────────────────
+//  RUTINAS
+// ─────────────────────────────────────────────
+function renderRutinas() {
+  const list = document.getElementById('rutinas-list');
+  if (!rutinas.length) {
+    list.innerHTML = '<div style="color:#aaa;padding:16px 0;font-size:13px;">No hay rutinas configuradas aún.</div>'; 
+    return;
+  }
+  
+  list.innerHTML = rutinas.map(r => {
+    // Forzamos el formateo limpio antes de dibujar el tag
+    const horaIn = formatearHoraWeb(r.hi);
+    const horaFi = formatearHoraWeb(r.hf);
+
+    return `
+      <div class="rutina-item">
+        <span style="font-weight:600;min-width:80px;font-size:13px;">${r.miembro}</span>
+        <span class="tag">${DIAS[DKEYS.indexOf(r.dia)]}</span>
+        <span class="tag">${horaIn}–${horaFi}</span>
+        <span style="flex:1;font-size:13px;">${r.desc}</span>
+        <button class="btn small danger" onclick="doDelRutina('${r.id}')">✕ Eliminar</button>
+      </div>`;
+  }).join('');
+}
+
+function openNewRutina() {
+  document.getElementById('mtitle').textContent='Nueva rutina base';
+  document.getElementById('mbody').innerHTML=`
+    <div class="fr"><label class="fl">Integrante</label><select id="mf-m">${TEAM.map(t=>`<option>${t}</option>`).join('')}</select></div>
+    <div class="fr"><label class="fl">Día de la semana</label><select id="mf-d">${DIAS.map((d,i)=>`<option value="${DKEYS[i]}">${d}</option>`).join('')}</select></div>
+    <div class="two-col">
+      <div class="fr"><label class="fl">Hora inicio</label><input type="time" id="mf-hi" value="09:00"/></div>
+      <div class="fr"><label class="fl">Hora fin</label><input type="time" id="mf-hf" value="13:00"/></div>
+    </div>
+    <div class="fr"><label class="fl">Descripción</label><input type="text" id="mf-desc" placeholder="Ej: Cursada Ingeniería, Trabajo..."/></div>`;
+  document.getElementById('mactions').innerHTML=`<button class="btn" onclick="closeOverlay()">Cancelar</button><button class="btn primary" onclick="doSaveRutina()">Guardar</button>`;
+  openOverlay();
+}
+
+async function doSaveRutina() {
+  const m    = document.getElementById('mf-m').value;
+  const dia  = document.getElementById('mf-d').value;
+  const hi   = document.getElementById('mf-hi').value;
+  const hf   = document.getElementById('mf-hf').value;
+  const desc = document.getElementById('mf-desc').value.trim();
+  if (!desc) { toast('⚠️ Escribí una descripción'); return; }
+  setLoading(true,'Guardando rutina...');
+  try {
+    const res = await apiPost({action:'saveRutina', miembro:m, dia, hi, hf, desc});
+    rutinas.push({id:res.id, miembro:m, dia, hi, hf, desc});
+    closeOverlay(); renderRutinas(); renderWeekly(); toast('✅ Rutina guardada');
+  } catch(e){ toast('❌ '+e.message); } finally{ setLoading(false); }
+}
+
+async function doDelRutina(id) {
+  if (!confirm('¿Eliminar esta rutina de todas las semanas?')) return;
+  setLoading(true,'Eliminando...');
+  try {
+    await apiPost({action:'deleteRutina', id});
+    rutinas = rutinas.filter(r=>r.id!==id);
+    renderRutinas(); renderWeekly(); toast('🗑️ Rutina eliminada');
+  } catch(e){ toast('❌ '+e.message); } finally{ setLoading(false); }
+}
+
+// ─────────────────────────────────────────────
+//  NAV / MODAL
+// ─────────────────────────────────────────────
+function showMod(m, btn) {
+  document.querySelectorAll('.module').forEach(el=>el.classList.remove('visible'));
+  document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('mod-'+m).classList.add('visible');
+  btn.classList.add('active');
+  if(m==='weekly') renderWeekly();
+}
+function openOverlay()  { document.getElementById('overlay').classList.add('open'); }
+function closeOverlay(e) {
+  if (e && e.target!==document.getElementById('overlay')) return;
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ─────────────────────────────────────────────
+//  BOOT START
+// ─────────────────────────────────────────────
+bootApp();
+</script>
+</body>
+</html>
