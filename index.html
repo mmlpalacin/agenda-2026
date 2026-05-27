@@ -20,65 +20,15 @@ body { font-family: system-ui, sans-serif; background: #f4f4f8; color: #1a1a2e; 
 .loading-txt { color: #fff; font-size: 14px; }
 
 /* ── BANNER TOTALMENTE RENOVADO Y VIBRANTE ──────────────── */
-#banner { 
-  background: #14532d; /* ¡Cambiado! Un verde bosque profundo, vivo y con mucha identidad */
-  color: #e2e8f0; 
-  padding: 14px 20px; 
-  display: flex; 
-  align-items: center; 
-  gap: 16px; 
-  border-bottom: 3px solid #4ade80; /* Línea inferior verde lima para conectar con el diseño */
-}
-.b-lbl { 
-  font-size: 11px; 
-  color: #4ade80; /* Texto de etiqueta en verde claro brillante */
-  text-transform: uppercase; 
-  letter-spacing: 0.08em; 
-  margin-bottom: 3px; 
-  font-weight: 700;
-}
-.b-evt { 
-  font-size: 16px; /* Evento un toque más grande */
-  color: #ffffff; 
-  font-weight: 600; 
-}
+#banner {  background: #14532d;  color: #e2e8f0;   padding: 14px 20px;   display: flex;   align-items: center;   gap: 16px;   border-bottom: 3px solid #4ade80;}
+.b-lbl {   font-size: 11px;   color: #4ade80;  text-transform: uppercase;   letter-spacing: 0.08em;   margin-bottom: 3px;   font-weight: 700;}
+.b-evt {   font-size: 16px;   color: #ffffff;   font-weight: 600; }
 
 /* ── CUENTA REGRESIVA DESTACADA ("12 DÍAS") ── */
-.b-cd { 
-  margin-left: auto; 
-  background: #22c55e; /* Usamos el mismo verde vivo central para unificar la paleta */
-  border: 2px solid #4ade80; /* Borde más brillante que le da relieve */
-  border-radius: 12px; /* Bordes bien redondeados y amigables */
-  padding: 8px 18px; 
-  text-align: center; 
-  box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); /* Un destello sutil de luz verde */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-width: 85px;
-  transition: transform 0.2s;
-}
-/* Efecto de pulso divertido al pasar el mouse por encima */
-.b-cd:hover {
-  transform: scale(1.05);
-}
-.b-cd .n { 
-  font-size: 28px; /* ¡Números gigantes para que sea el rey del banner! */
-  font-weight: 900; /* Super grueso e impactante */
-  color: #ffffff; /* Blanco puro para máximo contraste */
-  line-height: 1; 
-  font-family: system-ui, sans-serif;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-.b-cd .u { 
-  font-size: 11px; 
-  color: #f0fdf4; /* Texto "días" en un tono blanquecino/verdoso muy limpio */
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 2px;
-}
+.b-cd {   margin-left: auto;   background: #22c55e;  border: 2px solid #4ade80;  border-radius: 12px;  padding: 8px 18px;   text-align: center;   box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);   display: flex;  flex-direction: column;  justify-content: center;  align-items: center;  min-width: 85px;  transition: transform 0.2s;}
+.b-cd:hover {  transform: scale(1.05);}
+.b-cd .n {   font-size: 28px;  font-weight: 900;  color: #ffffff;  line-height: 1;   font-family: system-ui, sans-serif;  text-shadow: 0 1px 3px rgba(0,0,0,0.2);}
+.b-cd .u {   font-size: 11px;   color: #f0fdf4;   font-weight: 800;  text-transform: uppercase;  letter-spacing: 0.05em;  margin-top: 2px;}
 /* ── NAV ────────────────────────────────────────────────── */
 #nav { display: flex; gap: 4px; padding: 10px 14px; background: #fff; border-bottom: 1px solid #e0e0f0; flex-wrap: wrap; }
 .nav-btn { padding: 6px 16px; font-size: 13px; border: 1px solid #d0d0e8; border-radius: 8px; background: transparent; color: #555; cursor: pointer; }
@@ -106,111 +56,23 @@ body { font-family: system-ui, sans-serif; background: #f4f4f8; color: #1a1a2e; 
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── CALENDARIO ANUAL (VERDE VIBRANTE - ETAPA PRE) ───── */
-.cal-container {
-  background: #ffffff;
-  border: 3px solid #2d9500; /* Borde verde lima brillante */
-  border-radius: 12px;
-  overflow-x: auto;
-  box-shadow: 0 6px 25px rgba(74, 222, 128, 0.15); /* Sombra con un toque verde */
-  margin-top: 12px;
-}
-.months-grid {
-  display: grid;
-  grid-template-columns: repeat(10, minmax(115px, 1fr));
-  width: 100%;
-  background: #cbd5e1; /* Gris claro y limpio para las líneas divisorias */
-  gap: 1px; 
-}
-.month-hdr {
-  background: #2d9500; /* ¡Verde vibrante y lleno de vida! (Glow tipo Exploradores) */
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 800; /* Letras más marcadas */
-  text-align: center;
-  padding: 14px 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.15); /* Le da relieve al texto */
-}
+.cal-container {  background: #ffffff;  border: 3px solid #2d9500;   border-radius: 12px;  overflow-x: auto;  box-shadow: 0 6px 25px rgba(74, 222, 128, 0.15);  margin-top: 12px;}
+.months-grid {  display: grid;  grid-template-columns: repeat(10, minmax(115px, 1fr));  width: 100%;  background: #cbd5e1;  gap: 1px; }
+.month-hdr {  background: #2d9500;  color: #ffffff;  font-size: 14px;  font-weight: 800;  text-align: center;  padding: 14px 4px;  text-transform: uppercase;  letter-spacing: 0.07em;  text-shadow: 0 1px 2px rgba(0,0,0,0.15); }
 
-.sab-box {
-  background: #fffdf9; /* Un blanco cálido, más amigable */
-  min-height: 145px; 
-  padding: 8px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  transition: all 0.2s ease-in-out;
-}
+.sab-box {  background: #fffdf9;  min-height: 145px;   padding: 8px;  position: relative;  display: flex;  flex-direction: column;  justify-content: flex-start;transition: all 0.2s ease-in-out;}
 /* Efecto hover divertido al pasar el mouse por las celdas */
-.sab-box:hover { 
-  background: #f0fdf4; /* Fondo verde agua super clarito */
-  z-index: 10;
-  transform: scale(1.02); /* Pequeño salto de animación */
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
-}
+.sab-box:hover {background: #f0fdf4;  z-index: 10;  transform: scale(1.02); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);}
 
-.sab-num {
-  font-size: 15px;
-  font-weight: 800;
-  color: #1e6102; /* Número en verde oscuro para combinar con el marco */
-  text-align: right;
-  width: 100%;
-  margin-bottom: 6px;
-  font-family: system-ui, sans-serif;
-}
-.sab-body {
-  flex: 1;
-  font-size: 12px;
-  color: #0f172a; /* Texto principal bien oscuro para lectura óptima */
-  line-height: 1.4;
-  cursor: pointer;
-  word-break: break-word;
-  font-weight: 600; /* Texto un poquito más grueso para resaltar las actividades */
-}
-.sab-empty {
-  color: transparent; 
-  user-select: none;
-}
-.sab-edit-hint {
-  position: absolute;
-  bottom: 6px;
-  right: 8px;
-  font-size: 12px;
-  color: #2d9500;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
+.sab-num {font-size: 15px;font-weight: 800;color: #1e6102; text-align: right;width: 100%;margin-bottom: 6px;font-family: system-ui, sans-serif;}
+.sab-body {flex: 1;font-size: 12px;color: #0f172a;line-height: 1.4;cursor: pointer;word-break: break-word;font-weight: 600;}
+.sab-empty {color: transparent; user-select: none;}
+.sab-edit-hint {position: absolute;bottom: 6px;right: 8px;font-size: 12px;color: #2d9500;opacity: 0;transition: opacity 0.15s;}
 .sab-box:hover .sab-edit-hint { opacity: 1; }
 
 /* ── DISEÑO LLENO DE ENERGÍA PARA LAS ETIQUETAS ── */
-.tag-receso {
-  background-color: #2d9500; /* Verde pichón/receso super vivo */
-  color: #e8e8e8;
-  font-weight: 800;
-  padding: 4px 8px;
-  border-radius: 6px;
-  display: inline-block;
-  font-size: 11px;
-  margin-top: 5px;
-  border: 1px solid #2d9500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-.tag-partido {
-  background-color: #bae6fd; /* Azul cielo brillante */
-  color: #0369a1;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 6px;
-  display: inline-block;
-  font-size: 11px;
-  margin-top: 5px;
-  border: 1px solid #7dd3fc;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
+.tag-receso {background-color: #2d9500;  color: #e8e8e8;font-weight: 800;  padding: 4px 8px;  border-radius: 6px;  display: inline-block;  font-size: 11px;  margin-top: 5px;  border: 1px solid #2d9500;  text-transform: uppercase;  letter-spacing: 0.05em;box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+.tag-partido {background-color: #bae6fd; color: #0369a1;font-weight: 700;  padding: 4px 8px;border-radius: 6px;  display: inline-block;font-size: 11px;  margin-top: 5px;border: 1px solid #7dd3fc;  box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
 
 /* ── SEMANAL ────────────────────────────────────────────── */
 .week-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
@@ -241,10 +103,8 @@ table.matrix td.member-name { font-weight: 600; font-size: 12px; background: #e1
 #modal h3 { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
 .fr { margin-bottom: 10px; }
 .fl { font-size: 11px; color: #888; margin-bottom: 4px; display: block; }
-input[type=text], input[type=time], input[type=date], select, textarea {
-  border: 1px solid #d0d0e8; border-radius: 8px; padding: 7px 10px; font-size: 13px;
-  background: #fff; color: #1a1a2e; width: 100%;
-}
+input[type=text], input[type=time],input[type=date], 
+select, textarea {border: 1px solid #d0d0e8; border-radius: 8px; padding: 7px 10px; font-size: 13px;background: #fff; color: #1a1a2e; width: 100%;}
 input:focus, select:focus, textarea:focus { outline: none; border-color: #4a4a8a; box-shadow: 0 0 0 2px rgba(74,74,138,0.12); }
 .mactions { display: flex; gap: 8px; margin-top: 14px; justify-content: flex-end; flex-wrap: wrap; }
 .epicker { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
@@ -252,30 +112,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #4a4a8a
 .eopt.sel, .eopt:hover { border-color: #4a4a8a; background: #eeeeff; }
 .two-col { display: flex; gap: 10px; }
 .two-col .fr { flex: 1; }
-@media (max-width: 768px) {
-  .months-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1px;
-  }
 
-  .month-hdr {
-    font-size: 12px;
-    padding: 10px 4px;
-  }
-
-  .sab-box {
-    min-height: 100px;
-    padding: 6px;
-  }
-
-  .sab-num {
-    font-size: 13px;
-  }
-
-  .sab-body {
-    font-size: 11px;
-  }
-}
 </style>
 </head>
 <body>
