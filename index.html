@@ -7,7 +7,35 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: system-ui, sans-serif; background: #f4f4f8; color: #1a1a2e; min-height: 100vh; }
+/* Custom fix para la vista de calendario en celulares */
+@media (max-width: 600px) {
+  
+  /* 1. Forzar a que el contenedor del calendario use 1 sola columna */
+  .calendario-container, .grid-meses, table { 
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+  }
 
+  /* 2. Corregir los encabezados verdes (MARZO, ABRIL, etc.) */
+  .clase-del-header-verde, th {
+    display: block !important;
+    width: 100% !important;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  /* 3. Aplastar los bloques blancos gigantes para que no tengan aire de más */
+  .clase-de-la-celda-blanca, td {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important; /* 👈 ¡CLAVE! Cancela el tamaño gigante */
+    min-height: 60px !important; /* Un alto mínimo prudente para celu */
+    padding: 12px !important;
+    box-sizing: border-box;
+    border-bottom: 1px solid #eee; /* Separador sutil entre meses */
+  }
+}
 /* ── TOAST ─────────────────────────────────────────────── */
 #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a2e; color: #fff; padding: 10px 22px; border-radius: 8px; font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
 #toast.show { opacity: 1; }
