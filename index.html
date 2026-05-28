@@ -312,9 +312,12 @@ function updateBanner() {
     .filter(([k,v]) => v.actividad && new Date(k+'T12:00:00') >= hoy)
     .sort((a,b) => new Date(a[0])-new Date(b[0]))[0];
   if (!prox) { document.getElementById('b-name').textContent='Sin eventos próximos'; document.getElementById('b-days').textContent='—'; return; }
-  const diff = Math.ceil((new Date(prox[0]+'T12:00:00')-hoy)/86400000);
+  const diff = Math.ceil((new Date(prox[0]+'T12:00:00')-hoy)/86400000)-1;
+  
+  const diasMostrar = diff < 0 ? 0 : diff;
+  
   document.getElementById('b-name').textContent = (prox[1].emoji||'') + ' ' + prox[1].actividad.split('\n')[0].slice(0,50);
-  document.getElementById('b-days').textContent = diff;
+  document.getElementById('b-days').textContent = diasMostrar;
 }
 
 // ─────────────────────────────────────────────
