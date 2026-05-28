@@ -91,9 +91,8 @@ body { font-family: system-ui, sans-serif; background: #f4f4f8; color: #1a1a2e; 
 .sab-box {  background: #fffdf9;  min-height: 145px;   padding: 8px;  position: relative;  display: flex;  flex-direction: column;  justify-content: flex-start;transition: all 0.2s ease-in-out;}
 /* Efecto hover divertido al pasar el mouse por las celdas */
 .sab-box:hover {background: #f0fdf4;  z-index: 10;  transform: scale(1.02); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);}
-
 .sab-num {font-size: 15px;font-weight: 800;color: #1e6102; text-align: right;width: 100%;margin-bottom: 6px;font-family: system-ui, sans-serif;}
-.sab-body {flex: 1;font-size: 12px;color: #0f172a;line-height: 1.4;cursor: pointer;word-break: break-word;font-weight: 600;}
+.sab-body {flex: 1;font-size: 12px;color: #0f172a;line-height: 1.4;cursor: pointer;word-break: break-word;font-weight: 600; position: absolute}
 .sab-empty {color: transparent; user-select: none;}
 .sab-edit-hint {position: absolute;bottom: 6px;right: 8px;font-size: 12px;color: #2d9500;opacity: 0;transition: opacity 0.15s;}
 .sab-box:hover .sab-edit-hint { opacity: 1; }
