@@ -305,35 +305,37 @@ async function bootApp() {
 }
 
 async function loadAll() {
-  const [calRaw, rutRaw, excRaw] = await Promise.all([
-    apiGet({action:'getCalendar'}),
-    apiGet({action:'getRutinas'}),
-    apiGet({action:'getAllExcepciones'}),
-  ]);
+  // 👈 Ahora hacemos una única petición web
+  const initData = await apiGet({action: 'getInitialData'});
   
+  // 1. Procesar Calendario
   calData = {};
-  (calRaw||[]).forEach(r => {
+  (initData.calendar || []).forEach(r => {
     const key = r.ID_Fecha ? r.ID_Fecha.slice(0,10) : null;
-    if (key) {
-      calData[key] = { 
-        actividad: r.Actividad||'', emoji: r.Emoji||'', especial: r.Especial === 'SÍ' || r.Especial === true // 👈 Registra si es especial
-      };
-    }
+    if (key) calData[key] = { actividad: r.Actividad || '', emoji: r.Emoji || '' };
   });
 
-  rutinas = (rutRaw || []).map(r => ({
+  // 2. Procesar Rutinas Base
+  rutinas = (initData.rutinas || []).map(r => ({
     id: r.ID_Rutina, 
     miembro: r.Miembro, 
     dia: r.Dia_Semana,
-    hi: r.Hora_Inicio || '', // 👈 SIN .slice(0,10). Que pase el texto completo de Google
-    hf: r.Hora_Fin || '',    // 👈 SIN .slice(0,10).
+    hi: r.Hora_Inicio || '', 
+    hf: r.Hora_Fin || '',    
     desc: r.Descripcion || '',
   }));
 
-  excepciones = (excRaw||[]).map(e => ({
-    id: e.ID_Excepcion, fecha: e.Fecha_Especifica?.slice(0,10),
-    miembro: e.Miembro, hi: e.Hora_Inicio, hf: e.Hora_Fin,
-    estado: e.Estado, desc: e.Descripcion, tipo: e.Tipo, origen: e.Origen_Rutina,
+  // 3. Procesar Excepciones
+  excepciones = (initData.excepciones || []).map(e => ({
+    id: e.ID_Excepcion, 
+    fecha: e.Fecha_Especifica?.slice(0,10),
+    miembro: e.Miembro, 
+    hi: e.Hora_Inicio, 
+    hf: e.Hora_Fin,
+    estado: e.Estado, 
+    desc: e.Descripcion, 
+    tipo: e.Tipo, 
+    origen: e.Origen_Rutina,
   }));
 }
 
