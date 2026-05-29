@@ -369,9 +369,9 @@ function renderCal() {
   const byMonth = {};
   const mesesVisibles = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11]; // Marzo a Diciembre
   
-  mesesVisibles.forEach(mi => { byMonth[mi] = []; });
+  mesesVisibles.forEach(function(mi) { byMonth[mi] = []; });
 
-  sabs.forEach(s => {
+  sabs.forEach(function(s) {
     const m = s.getMonth();
     if (byMonth[m] !== undefined) {
       byMonth[m].push(s);
@@ -382,7 +382,7 @@ function renderCal() {
   grid.innerHTML = '';
 
   // 1. Cabeceras con los nombres de los meses en verde
-  mesesVisibles.forEach(mi => {
+  mesesVisibles.forEach(function(mi) {
     const hdr = document.createElement('div');
     hdr.className = 'month-hdr';
     hdr.textContent = MESES[mi];
@@ -391,13 +391,13 @@ function renderCal() {
 
   // 2. Calcular número máximo de filas (semanas)
   let maxFilas = 0;
-  mesesVisibles.forEach(mi => {
+  mesesVisibles.forEach(function(mi) {
     if (byMonth[mi].length > maxFilas) maxFilas = byMonth[mi].length;
   });
 
   // 3. Renderizado cruzado para formar la grilla perfecta
   for (let fila = 0; fila < maxFilas; fila++) {
-    mesesVisibles.forEach(mi => {
+    mesesVisibles.forEach(function(mi) {
       const sabsDelMes = byMonth[mi];
       const s = sabsDelMes[fila]; 
 
@@ -411,18 +411,19 @@ function renderCal() {
 
         let htmlContenido = '<span class="sab-empty"></span>';
         if (hasEv) {
-          let textoProcesado = ev.actividad.split('\n').map(l => {
-            if (l.toUpperCase().includes('RECESO')) return `<span class="tag-receso">${l}</span>`;
-            if (l.toUpperCase().includes('VS')) return `<span class="tag-partido">${l}</span>`;
-            return `<span style="display:block; margin-bottom:2px; margin-top:10px">${l}</span>`;
+          let textoProcesado = ev.actividad.split('\n').map(function(l) {
+            if (l.toUpperCase().includes('RECESO')) return '<span class="tag-receso">' + l + '</span>';
+            if (l.toUpperCase().includes('VS')) return '<span class="tag-partido">' + l + '</span>';
+            return '<span style="display:block; margin-bottom:2px; margin-top:10px">' + l + '</span>';
           }).join('');
           
-          // 👈 Si el evento está marcado como especial, se le incrusta la clase de subrayado verde
           const claseEspecial = ev.especial ? 'class="evento-especial-texto"' : '';
-          htmlContenido = `${ev.emoji ? `<span class="sab-emoji">${ev.emoji}</span> ` : ''}<span ${claseEspecial}>${textoProcesado}</span>`;
+          const emojiHtml = ev.emoji ? '<span class="sab-emoji">' + ev.emoji + '</span> ' : '';
+          htmlContenido = emojiHtml + '<span ' + claseEspecial + '>' + textoProcesado + '</span>';
         }
 
-        box.setAttribute('onclick', `openCalModal('${key}')`);
+        // Usamos comillas simples y dobles estándar para evitar conflictos de backticks
+        box.setAttribute('onclick', "openCalModal('" + key + "')");
         box.innerHTML = `
           <div class="sab-num">${String(s.getDate()).padStart(2, '0')}</div>
           <div class="sab-body">
