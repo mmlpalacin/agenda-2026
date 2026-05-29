@@ -163,8 +163,8 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #4a4a8a
 .eopt.sel, .eopt:hover { border-color: #4a4a8a; background: #eeeeff; }
 .two-col { display: flex; gap: 10px; }
 .two-col .fr { flex: 1; }
-
-.evento-especial-texto{background-color: #22c55e;  color: #000000;font-weight:500;padding: 0px 3px; border-radius: 6px;}
+b {color: #ec0a0a;}
+.evento-especial-texto{background-color: #22c55e; box-sizing: border-box; width: 100%;color: #000000;font-weight:500;padding: 4px 6px; border-radius: 6px;display: block;margin-top: 4px;}
 .checkbox-apb {  display: flex;  align-items: center;  gap: 10px;  background: #f0fdf4;  padding: 12px;  border-radius: 8px;  margin-top: 12px;  border: 1px solid #bbf7d0;  cursor: pointer;  user-select: none;}
 .checkbox-apb input {  transform: scale(1.6);   cursor: pointer;}
 .dias-selector-container {  display: flex;  gap: 6px;  margin-top: 6px;  margin-bottom: 14px;}
@@ -200,7 +200,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #4a4a8a
     </div>
     <div id="mod-weekly" class="module">
       <div class="sec-header">
-        <div><div class="sec-title">Disponibilidad del equipo <b>(POR SEMANA)</b></div><div class="sec-sub">Vista <b>semanal</b> — clic en un bloque base para suspenderlo <b>por ese día</b><br>Cargar solo horarios <b>especiales</b> de una semana, horarios de rutina (cursadas, trabajo, ensayos, etc) se cargan en <b>Rutinas</b></div></div>
+        <div><div class="sec-title">Disponibilidad del equipo <b>(POR SEMANA)</b></div><div class="sec-sub">Vista <b>semanal</b> — clic en un bloque base para suspenderlo <b>por ese día</b><br>Cargar solo horarios <b>especiales</b> de una semana, horarios de rutina (cursadas, trabajo, ensayos, etc) se cargan en <b><u>¡Rutinas!</u></b></div></div>
         <button class="btn warn" onclick="buscarMejorReunion()">👥 Encontrar mejor reunión</button>      </div>
       <div class="week-nav">
         <button class="btn" onclick="changeWeek(-1)">← Anterior</button>
