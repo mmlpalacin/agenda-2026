@@ -140,6 +140,36 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #4a4a8a
 .two-col { display: flex; gap: 10px; }
 .two-col .fr { flex: 1; }
 
+/* ── NUEVOS ESTILOS DE DEFENSA APB ── */
+.evento-especial-texto {
+  text-decoration: underline !important;
+  text-decoration-color: #22c55e !important; /* Subrayado Verde vivo de Google */
+  text-decoration-thickness: 3px !important;  /* Grueso e imposible de ignorar */
+  font-weight: 800 !important;
+  color: #14532d !important;
+}
+.checkbox-apb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0fdf4; /* Fondo verde sutil */
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 12px;
+  border: 1px solid #bbf7d0;
+  cursor: pointer;
+  user-select: none;
+}
+.checkbox-apb input {
+  transform: scale(1.6); /* Botón gigante para el dedo en el celu */
+  cursor: pointer;
+}
+.dias-selector-container {  display: flex;  gap: 6px;  margin-top: 6px;  margin-bottom: 14px;}
+.dia-btn {  flex: 1;  text-align: center;  cursor: pointer;}
+.dia-btn input {display: none;}
+.dia-btn span {  display: block;  padding: 12px 0;  background: #f4f4f8;  border: 2px solid #d0d0e8;  border-radius: 8px;  font-weight: 700;  font-size: 13px;  color: #555;  transition: all 0.15s;}
+/* Cuando se selecciona un día, cambia de color al instante */
+.dia-btn input:checked + span {  background: #2d9500;  color: white;  border-color: #195400;}
 </style>
 </head>
 <body>
@@ -284,7 +314,11 @@ async function loadAll() {
   calData = {};
   (calRaw||[]).forEach(r => {
     const key = r.ID_Fecha ? r.ID_Fecha.slice(0,10) : null;
-    if (key) calData[key] = { actividad: r.Actividad||'', emoji: r.Emoji||'' };
+    if (key) {
+      calData[key] = { 
+        actividad: r.Actividad||'', emoji: r.Emoji||'', especial: r.Especial === 'SÍ' || r.Especial === true // 👈 Registra si es especial
+      };
+    }
   });
 
   rutinas = (rutRaw || []).map(r => ({
@@ -384,8 +418,10 @@ function renderCal() {
             return `<span style="display:block; margin-bottom:2px; margin-top:10px">${l}</span>`;
           }).join('');
           
-          htmlContenido = `${ev.emoji ? `<span class="sab-emoji">${ev.emoji}</span> ` : ''}${textoProcesado}`;
-        }
+          // Si el evento está marcado como especial, se le incrusta la clase de subrayado verde
+          const claseEspecial = ev.especial ? 'class="evento-especial-texto"' : '';
+          htmlContenido = `${ev.emoji ? `<span class="sab-emoji">${ev.emoji}</span> ` : ''}<span ${claseEspecial}>${textoProcesado}</span>`;
+        }        }
 
         box.setAttribute('onclick', `openCalModal('${key}')`);
         box.innerHTML = `
@@ -412,50 +448,72 @@ function openNewCal() {
   document.getElementById('mbody').innerHTML=`
     <div class="fr"><label class="fl">Fecha (debe ser sábado)</label><input type="date" id="mf-fecha"/></div>
     <div class="fr"><label class="fl">Descripción</label><textarea id="mf-act" rows="3" placeholder="Nombre del evento..."></textarea></div>
+    <div class="fr">
+      <label class="checkbox-apb">
+        <input type="checkbox" id="mf-especial">
+        <strong>⭐ ¡Marcar como Evento Especial! (Subrayado Verde)</strong>
+      </label>
+    </div>
     <div class="fr"><label class="fl">Ícono</label><div class="epicker">${EMOJIS.map(e=>`<span class="eopt" onclick="pickEmoji('${e}',this)">${e}</span>`).join('')}</div></div>`;
-  document.getElementById('mactions').innerHTML=`<button class="btn" onclick="closeOverlay()">Cancelar</button><button class="btn primary" onclick="saveCalNew()">Guardar</button>`;
+  document.getElementById('mactions').innerHTML=`<button class="btn" onclick="closeOverlay()">Cancelar</button><button class="btn primary" id="btn-save-cal" onclick="saveCalNew()">Guardar</button>`;
   openOverlay();
 }
 
 function openCalModal(key) {
-  const ev = calData[key]||{actividad:'',emoji:''};
+  const ev = calData[key]||{actividad:'',emoji:'',especial:false};
   selEmoji = ev.emoji||'';
   const d = new Date(key+'T12:00:00');
   document.getElementById('mtitle').textContent=`Sábado ${d.getDate()} de ${MESES[d.getMonth()]}`;
   document.getElementById('mbody').innerHTML=`
     <div class="fr"><label class="fl">Descripción</label><textarea id="mf-act" rows="3">${ev.actividad}</textarea></div>
+    <div class="fr">
+      <label class="checkbox-apb">
+        <input type="checkbox" id="mf-especial" ${ev.especial ? 'checked' : ''}>
+        <strong>⭐ ¡Marcar como Evento Especial! (Subrayado Verde)</strong>
+      </label>
+    </div>
     <div class="fr"><label class="fl">Ícono</label><div class="epicker">${EMOJIS.map(e=>`<span class="eopt ${selEmoji===e?'sel':''}" onclick="pickEmoji('${e}',this)">${e}</span>`).join('')}</div></div>`;
   const delBtn = ev.actividad ? `<button class="btn danger" onclick="doDelCal('${key}')">Eliminar</button>` : '';
-  document.getElementById('mactions').innerHTML=`${delBtn}<button class="btn" onclick="closeOverlay()">Cancelar</button><button class="btn primary" onclick="doSaveCal('${key}')">Guardar</button>`;
+  document.getElementById('mactions').innerHTML=`${delBtn}<button class="btn" onclick="closeOverlay()">Cancelar</button><button class="btn primary" id="btn-save-cal" onclick="doSaveCal('${key}')">Guardar</button>`;
   openOverlay();
+}
+
+async function saveCalNew() {
+  const fecha = document.getElementById('mf-fecha').value;
+  const act   = document.getElementById('mf-act').value.trim();
+  const especial = document.getElementById('mf-especial').checked;
+  if (!fecha||!act) { toast('⚠️ Completá fecha y descripción'); return; }
+  
+  const btn = document.getElementById('btn-save-cal');
+  if(btn) btn.disabled = true; // APB: Deshabilita click doble
+
+  setLoading(true,'Guardando...');
+  try {
+    await apiPost({action:'saveCalEvent', fecha, actividad:act, emoji:selEmoji, especial});
+    calData[fecha] = {actividad:act, emoji:selEmoji, especial};
+    closeOverlay(); renderCal(); updateBanner(); toast('✅ Evento guardado');
+  } catch(e){ toast('❌ '+e.message); if(btn) btn.disabled = false; } finally{ setLoading(false); }
+}
+
+async function doSaveCal(key) {
+  const act = document.getElementById('mf-act').value.trim();
+  const especial = document.getElementById('mf-especial').checked;
+  
+  const btn = document.getElementById('btn-save-cal');
+  if(btn) btn.disabled = true; // APB: Deshabilita click doble
+
+  setLoading(true,'Guardando...');
+  try {
+    await apiPost({action:'saveCalEvent', fecha:key, actividad:act, emoji:selEmoji, especial});
+    calData[key] = {actividad:act, emoji:selEmoji, especial};
+    closeOverlay(); renderCal(); updateBanner(); toast('✅ Evento actualizado');
+  } catch(e){ toast('❌ '+e.message); if(btn) btn.disabled = false; } finally{ setLoading(false); }
 }
 
 function pickEmoji(e,el) {
   selEmoji=e;
   document.querySelectorAll('.eopt').forEach(x=>x.classList.remove('sel'));
   el.classList.add('sel');
-}
-
-async function saveCalNew() {
-  const fecha = document.getElementById('mf-fecha').value;
-  const act   = document.getElementById('mf-act').value.trim();
-  if (!fecha||!act) { toast('⚠️ Completá fecha y descripción'); return; }
-  setLoading(true,'Guardando...');
-  try {
-    await apiPost({action:'saveCalEvent', fecha, actividad:act, emoji:selEmoji});
-    calData[fecha] = {actividad:act, emoji:selEmoji};
-    closeOverlay(); renderCal(); updateBanner(); toast('✅ Evento guardado');
-  } catch(e){ toast('❌ '+e.message); } finally{ setLoading(false); }
-}
-
-async function doSaveCal(key) {
-  const act = document.getElementById('mf-act').value.trim();
-  setLoading(true,'Guardando...');
-  try {
-    await apiPost({action:'saveCalEvent', fecha:key, actividad:act, emoji:selEmoji});
-    calData[key] = {actividad:act, emoji:selEmoji};
-    closeOverlay(); renderCal(); updateBanner(); toast('✅ Evento actualizado');
-  } catch(e){ toast('❌ '+e.message); } finally{ setLoading(false); }
 }
 
 async function doDelCal(key) {
@@ -792,9 +850,9 @@ function renderRutinas() {
   }
   
   list.innerHTML = rutinas.map(r => {
-    // Forzamos el formateo limpio antes de dibujar el tag
     const horaIn = formatearHoraWeb(r.hi);
     const horaFi = formatearHoraWeb(r.hf);
+    const descEscapada = (r.desc || '').replace(/"/g, '&quot;'); // Evita errores de comillas en HTML
 
     return `
       <div class="rutina-item">
@@ -802,38 +860,113 @@ function renderRutinas() {
         <span class="tag">${DIAS[DKEYS.indexOf(r.dia)]}</span>
         <span class="tag">${horaIn}–${horaFi}</span>
         <span style="flex:1;font-size:13px;">${r.desc}</span>
-        <button class="btn small danger" onclick="doDelRutina('${r.id}')">✕ Eliminar</button>
+        <div style="display:flex; gap:6px;">
+          <button class="btn small" style="border-color:#b5b5f0;" onclick="openEditRutina('${r.id}', '${r.miembro}', '${r.dia}', '${horaIn}', '${horaFi}', '${descEscapada}')">✏️ Editar</button>
+          <button class="btn small danger" onclick="doDelRutina('${r.id}')">✕ Eliminar</button>
+        </div>
       </div>`;
   }).join('');
 }
 
 function openNewRutina() {
-  document.getElementById('mtitle').textContent='Nueva rutina base';
-  document.getElementById('mbody').innerHTML=`
+  document.getElementById('mtitle').textContent = 'Nueva rutina base (Selección Múltiple)';
+  document.getElementById('mbody').innerHTML = `
+    <input type="hidden" id="mf-rutina-id" value=""/>
     <div class="fr"><label class="fl">Integrante</label><select id="mf-m">${TEAM.map(t=>`<option>${t}</option>`).join('')}</select></div>
-    <div class="fr"><label class="fl">Día de la semana</label><select id="mf-d">${DIAS.map((d,i)=>`<option value="${DKEYS[i]}">${d}</option>`).join('')}</select></div>
+    
+    <div class="fr">
+      <label class="fl" style="font-weight:bold; color:#1a1a2e;">¿Qué días se repite esta rutina?</label>
+      <div class="dias-selector-container">
+        <label class="dia-btn"><input type="checkbox" name="mf-dias-multi" value="lun"><span>L</span></label>
+        <label class="dia-btn"><input type="checkbox" name="mf-dias-multi" value="mar"><span>M</span></label>
+        <label class="dia-btn"><input type="checkbox" name="mf-dias-multi" value="mie"><span>X</span></label>
+        <label class="dia-btn"><input type="checkbox" name="mf-dias-multi" value="jue"><span>J</span></label>
+        <label class="dia-btn"><input type="checkbox" name="mf-dias-multi" value="vie"><span>V</span></label>
+        <label class="dia-btn"><input type="checkbox" name="mf-dias-multi" value="sab"><span>S</span></label>
+      </div>
+    </div>
+
     <div class="two-col">
       <div class="fr"><label class="fl">Hora inicio</label><input type="time" id="mf-hi" value="09:00"/></div>
       <div class="fr"><label class="fl">Hora fin</label><input type="time" id="mf-hf" value="13:00"/></div>
     </div>
-    <div class="fr"><label class="fl">Descripción</label><input type="text" id="mf-desc" placeholder="Ej: Cursada Ingeniería, Trabajo..."/></div>`;
-  document.getElementById('mactions').innerHTML=`<button class="btn" onclick="closeOverlay()">Cancelar</button><button class="btn primary" onclick="doSaveRutina()">Guardar</button>`;
+    <div class="fr"><label class="fl">Descripción</label><input type="text" id="mf-desc" placeholder="Ej: Cursada, Trabajo..."/></div>`;
+  
+  document.getElementById('mactions').innerHTML = `<button class="btn" onclick="closeOverlay()">Cancelar</button><button class="btn primary" id="btn-save-rutina" onclick="doSaveRutina()">🚀 Guardar en bloque</button>`;
+  openOverlay();
+}
+
+function openEditRutina(id, miembro, dia, hi, hf, desc) {
+  document.getElementById('mtitle').textContent = 'Editar horario de rutina';
+  document.getElementById('mbody').innerHTML = `
+    <input type="hidden" id="mf-rutina-id" value="${id}"/>
+    <div class="fr"><label class="fl">Integrante</label><select id="mf-m" disabled>${TEAM.map(t=>`<option ${t===miembro?'selected':''}>${t}</option>`).join('')}</select></div>
+    <div class="fr"><label class="fl">Día de la semana</label><select id="mf-d" disabled>${DIAS.map((d,i)=>`<option value="${DKEYS[i]}" ${DKEYS[i]===dia?'selected':''}>${d}</option>`).join('')}</select></div>
+    
+    <div class="two-col">
+      <div class="fr"><label class="fl">Hora inicio</label><input type="time" id="mf-hi" value="${hi}"/></div>
+      <div class="fr"><label class="fl">Hora fin</label><input type="time" id="mf-hf" value="${hf}"/></div>
+    </div>
+    <div class="fr"><label class="fl">Descripción</label><input type="text" id="mf-desc" value="${desc}"/></div>`;
+  
+  document.getElementById('mactions').innerHTML = `<button class="btn danger" onclick="closeOverlay(); doDelRutina('${id}');">✕ Eliminar Rutina</button><button class="btn" onclick="closeOverlay()">Cancelar</button><button class="btn primary" id="btn-save-rutina" onclick="doSaveRutina()">🔄 Actualizar Horario</button>`;
   openOverlay();
 }
 
 async function doSaveRutina() {
+  const id   = document.getElementById('mf-rutina-id').value;
   const m    = document.getElementById('mf-m').value;
-  const dia  = document.getElementById('mf-d').value;
   const hi   = document.getElementById('mf-hi').value;
   const hf   = document.getElementById('mf-hf').value;
   const desc = document.getElementById('mf-desc').value.trim();
+  
   if (!desc) { toast('⚠️ Escribí una descripción'); return; }
-  setLoading(true,'Guardando rutina...');
+  if (!hi || !hf) { toast('⚠️ Los horarios no pueden quedar vacíos'); return; }
+
+  let payload = { miembro: m, hi, hf, desc };
+
+  if (id) {
+    // Si hay un ID en el input oculto, procesa una actualización regular
+    payload.id = id;
+    payload.dia = document.getElementById('mf-d').value;
+  } else {
+    // Si no hay ID, recolecta las casillas de verificación múltiples
+    const checkboxes = document.querySelectorAll('input[name="mf-dias-multi"]:checked');
+    const diasSeleccionados = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (diasSeleccionados.length === 0) {
+      toast('⚠️ ¡Te colgaste! Seleccioná al menos un día usando los botones grises.');
+      return;
+    }
+    payload.dias = diasSeleccionados;
+  }
+
+  // 🛡️ Blindaje APB: Desactivamos el botón principal al primer instante de click
+  const btn = document.getElementById('btn-save-rutina');
+  if (btn) btn.disabled = true;
+
+  setLoading(true, id ? 'Actualizando rutina...' : 'Creando rutinas base...');
   try {
-    const res = await apiPost({action:'saveRutina', miembro:m, dia, hi, hf, desc});
-    rutinas.push({id:res.id, miembro:m, dia, hi, hf, desc});
-    closeOverlay(); renderRutinas(); renderWeekly(); toast('✅ Rutina guardada');
-  } catch(e){ toast('❌ '+e.message); } finally{ setLoading(false); }
+    await apiPost({action:'saveRutina', ...payload});
+    
+    // Súper Parche APB: Volvemos a traer la lista limpia desde el Excel para 
+    // evitar que se desincronice el orden visual de los días.
+    const rutRaw = await apiGet({action:'getRutinas'});
+    rutinas = (rutRaw || []).map(r => ({
+      id: r.ID_Rutina, miembro: r.Miembro, dia: r.Dia_Semana,
+      hi: r.Hora_Inicio || '', hf: r.Hora_Fin || '', desc: r.Descripcion || '',
+    }));
+
+    closeOverlay(); 
+    renderRutinas(); 
+    if (typeof renderWeekly === 'function') renderWeekly(); 
+    toast(id ? '🔄 Horario editado correctamente' : '✅ Rutinas registradas con éxito');
+  } catch(e) { 
+    toast('❌ ' + e.message); 
+    if (btn) btn.disabled = false; // Re-habilita si falló la API
+  } finally { 
+    setLoading(false); 
+  }
 }
 
 async function doDelRutina(id) {
