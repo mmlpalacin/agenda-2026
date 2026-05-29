@@ -7,30 +7,14 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: system-ui, sans-serif; background: #f4f4f8; color: #1a1a2e; min-height: 100vh; }
-/* Custom fix para celulares - REESCRITO SIN PISARSE ENTRE MÓDULOS */
+/* Custom fix para celulares - REESCRITO SIN TOCAR ESTRUCTURA DE MESES */
 @media (max-width: 600px) {
   
   /* ==========================================
-     1. PLAN ANUAL (Mantiene tu diseño original)
+     1. PLAN ANUAL (Mantiene tus columnas originales)
      ========================================== */
-  
-  /* Contenedor de los meses en vertical */
-  .calendario-container, .grid-meses, #months-grid { 
-    display: flex !important;
-    flex-direction: column !important;
-    width: 100% !important;
-  }
 
-  /* Los encabezados verdes de los meses (MARZO, ABRIL, etc.) */
-  .month-hdr {
-    display: block !important;
-    width: 100% !important;
-    text-align: center;
-    box-sizing: border-box;
-    margin-top: 15px;
-  }
-
-  /* Los bloques blancos de los días (Sábados) dentro del plan anual */
+  /* Forzamos a que los bloques de los días dentro del mes ocupen todo el ancho si el mes se achica */
   .sab-box {
     width: 100% !important;
     height: auto !important;
@@ -174,7 +158,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #4a4a8a
 .two-col { display: flex; gap: 10px; }
 .two-col .fr { flex: 1; }
 
-.evento-especial-texto{background-color: #22c55e;  color: #e8e8e8;font-weight: 800;  padding: 4px 8px;  border-radius: 6px;  display: inline-block;  font-size: 11px;  margin-top: 5px;  border: 1px solid #2d9500;  text-transform: uppercase;  letter-spacing: 0.05em;box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+.evento-especial-texto{background-color: #22c55e;  color: #e8e8e8;font-weight: 800; border-radius: 6px;  font-size: 11px;  border: 1px solid #2d9500;  text-transform: uppercase;  letter-spacing: 0.05em;box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
 .checkbox-apb {  display: flex;  align-items: center;  gap: 10px;  background: #f0fdf4;  padding: 12px;  border-radius: 8px;  margin-top: 12px;  border: 1px solid #bbf7d0;  cursor: pointer;  user-select: none;}
 .checkbox-apb input {  transform: scale(1.6);   cursor: pointer;}
 .dias-selector-container {  display: flex;  gap: 6px;  margin-top: 6px;  margin-bottom: 14px;}
