@@ -7,33 +7,53 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: system-ui, sans-serif; background: #f4f4f8; color: #1a1a2e; min-height: 100vh; }
-/* Custom fix para la vista de calendario en celulares */
 @media (max-width: 600px) {
   
-  /* 1. Forzar a que el contenedor del calendario use 1 sola columna */
-  .calendario-container, .grid-meses, table { 
+  /* 1. Forzar a que SOLO el contenedor del calendario use 1 sola columna */
+  .calendario-container, .grid-meses, #months-grid { 
     display: flex !important;
     flex-direction: column !important;
     width: 100% !important;
   }
 
-  /* 2. Corregir los encabezados verdes (MARZO, ABRIL, etc.) */
-  .clase-del-header-verde, th {
+  /* 2. Corregir los encabezados verdes del calendario */
+  .month-hdr {
     display: block !important;
     width: 100% !important;
     text-align: center;
     box-sizing: border-box;
+    margin-top: 15px;
   }
 
-  /* 3. Aplastar los bloques blancos gigantes para que no tengan aire de más */
-  .clase-de-la-celda-blanca, td {
+  /* 3. Ajustar las celdas del calendario para que no queden gigantes */
+  .sab-box {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 60px;
+    margin-bottom: 8px;
+  }
+
+  /* 4. MANTENER LA VISTA SEMANAL EN FORMATO TABLA HORIZONTAL */
+  /* Permitimos que la tabla semanal haga scroll de izquierda a derecha en vez de aplastarse */
+  #mod-weekly .table-responsive, 
+  #mod-weekly .contenedor-tabla {
     display: block !important;
     width: 100% !important;
-    height: auto !important; /* 👈 ¡CLAVE! Cancela el tamaño gigante */
-    min-height: 60px !important; /* Un alto mínimo prudente para celu */
-    padding: 12px !important;
-    box-sizing: border-box;
-    border-bottom: 1px solid #eee; /* Separador sutil entre meses */
+    overflow-x: auto !important; /* Activa scroll horizontal con el dedo */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Aseguramos que la tabla dentro de la sección semanal retenga su comportamiento original */
+  #mod-weekly table {
+    display: table !important; /* Fuerza a mantener las columnas unidas */
+    width: 100% !important;
+    min-width: 600px; /* Evita que las columnas se compriman demasiado */
+  }
+
+  #mod-weekly th, #mod-weekly td {
+    display: table-cell !important; /* Devuelve el comportamiento de celda horizontal */
+    padding: 6px 4px !important;
+    font-size: 13px !important;
   }
 }
 /* ── TOAST ─────────────────────────────────────────────── */
@@ -140,35 +160,13 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #4a4a8a
 .two-col { display: flex; gap: 10px; }
 .two-col .fr { flex: 1; }
 
-/* ── NUEVOS ESTILOS DE DEFENSA APB ── */
-.evento-especial-texto {
-  text-decoration: underline !important;
-  text-decoration-color: #22c55e !important; /* Subrayado Verde vivo de Google */
-  text-decoration-thickness: 3px !important;  /* Grueso e imposible de ignorar */
-  font-weight: 800 !important;
-  color: #14532d !important;
-}
-.checkbox-apb {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #f0fdf4; /* Fondo verde sutil */
-  padding: 12px;
-  border-radius: 8px;
-  margin-top: 12px;
-  border: 1px solid #bbf7d0;
-  cursor: pointer;
-  user-select: none;
-}
-.checkbox-apb input {
-  transform: scale(1.6); /* Botón gigante para el dedo en el celu */
-  cursor: pointer;
-}
+.evento-especial-texto {  display: inline-block;  background-color: #e6f4ea; color: #137333;  font-weight: bold;  padding: 4px 8px;  border-radius: 6px;  border-left: 4px solid #1e8e3e;  margin-top: 4px;  box-shadow: 0 1px 3px rgba(0,0,0,0.05); width: 100%; box-sizing: border-box;}
+.checkbox-apb {  display: flex;  align-items: center;  gap: 10px;  background: #f0fdf4;  padding: 12px;  border-radius: 8px;  margin-top: 12px;  border: 1px solid #bbf7d0;  cursor: pointer;  user-select: none;}
+.checkbox-apb input {  transform: scale(1.6);   cursor: pointer;}
 .dias-selector-container {  display: flex;  gap: 6px;  margin-top: 6px;  margin-bottom: 14px;}
 .dia-btn {  flex: 1;  text-align: center;  cursor: pointer;}
 .dia-btn input {display: none;}
 .dia-btn span {  display: block;  padding: 12px 0;  background: #f4f4f8;  border: 2px solid #d0d0e8;  border-radius: 8px;  font-weight: 700;  font-size: 13px;  color: #555;  transition: all 0.15s;}
-/* Cuando se selecciona un día, cambia de color al instante */
 .dia-btn input:checked + span {  background: #2d9500;  color: white;  border-color: #195400;}
 </style>
 </head>
@@ -185,7 +183,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #4a4a8a
   <div id="nav">
     <button class="nav-btn active" onclick="showMod('cal',this)">📆 Calendario anual</button>
     <button class="nav-btn" onclick="showMod('weekly',this)">📊 Disponibilidad semanal</button>
-    <button class="nav-btn" onclick="showMod('rutinas',this)">🔁 Rutinas base</button>
+    <button class="nav-btn" onclick="showMod('rutinas',this)">🔁 Rutinas</button>
   </div>
   <div id="main">
     <div id="mod-cal" class="module visible">
@@ -198,7 +196,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #4a4a8a
     </div>
     <div id="mod-weekly" class="module">
       <div class="sec-header">
-        <div><div class="sec-title">Disponibilidad del equipo</div><div class="sec-sub">Vista semanal — clic en un bloque base para suspenderlo ese día</div></div>
+        <div><div class="sec-title">Disponibilidad del equipo <b>(POR SEMANA)</b></div><div class="sec-sub">Vista <b>semanal</b> — clic en un bloque base para suspenderlo <b>por ese día</b><br>Cargar solo horarios <b>especiales</b> de una semana, horarios de rutina (cursadas, trabajo, ensayos, etc) se cargan en <b>Rutinas</b></div></div>
         <button class="btn warn" onclick="buscarMejorReunion()">👥 Encontrar mejor reunión</button>      </div>
       <div class="week-nav">
         <button class="btn" onclick="changeWeek(-1)">← Anterior</button>
@@ -209,7 +207,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #4a4a8a
     </div>
     <div id="mod-rutinas" class="module">
       <div class="sec-header">
-        <div><div class="sec-title">Rutinas base</div><div class="sec-sub">Se aplican automáticamente en todas las semanas</div></div>
+        <div><div class="sec-title">Rutinas Base Del Año</div><div class="sec-sub">Se aplican automáticamente en todas las semanas</div></div>
         <button class="btn primary" onclick="openNewRutina()">+ Nueva rutina</button>
       </div>
       <div id="rutinas-list"></div>
