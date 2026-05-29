@@ -10,55 +10,13 @@ body { font-family: system-ui, sans-serif; background: #f4f4f8; color: #1a1a2e; 
 /* Custom fix para celulares - REESCRITO SIN TOCAR ESTRUCTURA DE MESES */
 @media (max-width: 600px) {
   
- /* 1. Forzar a que el contenedor del calendario use 1 sola columna */
-  .calendario-container, .grid-meses, table { 
-    display: flex !important;
-    flex-direction: column !important;
-    width: 100% !important;
-  }
-
-  /* 2. Corregir los encabezados verdes (MARZO, ABRIL, etc.) */
-  .clase-del-header-verde, th {
-    display: block !important;
-    width: 100% !important;
-    text-align: center;
-    box-sizing: border-box;
-  }
-
-  /* 3. Aplastar los bloques blancos gigantes para que no tengan aire de más */
-  .clase-de-la-celda-blanca, td {
-    display: block !important;
-    width: 100% !important;
-    height: auto !important; /* 👈 ¡CLAVE! Cancela el tamaño gigante */
-    min-height: 60px !important; /* Un alto mínimo prudente para celu */
-    padding: 12px !important;
-    box-sizing: border-box;
-    border-bottom: 1px solid #eee; /* Separador sutil entre meses */
-  }
-
-   #mod-weekly .table-responsive, 
-  #mod-weekly .contenedor-tabla {
-    display: block !important;
-    width: 100% !important;
-    overflow-x: auto !important; 
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* La tabla semanal retiene su estructura de filas y columnas intacta */
-  #mod-weekly table {
-    display: table !important; 
-    width: 100% !important;
-    min-width: 600px; /* Evita que las columnas se compriman */
-  }
-
-  /* Las celdas de la grilla semanal se quedan una al lado de la otra */
-  #mod-weekly th, #mod-weekly td {
-    display: table-cell !important; 
-    padding: 6px 4px !important;
-    font-size: 13px !important;
-    width: auto !important; /* Cancela que se estiren al 100% */
-    height: auto !important;
-  }
+  .calendario-container, .grid-meses, table { display: flex !important;    flex-direction: column !important;    width: 100% !important;  }
+  .clase-del-header-verde, th {    display: block !important;    width: 100% !important;    text-align: center;    box-sizing: border-box;  }
+  .clase-de-la-celda-blanca, td {    display: block !important;    width: 100% !important;    height: auto !important;    min-height: 60px !important;  padding: 12px !important;    box-sizing: border-box;    border-bottom: 1px solid #eee;   }
+  #mod-weekly .table-responsive, 
+  #mod-weekly .contenedor-tabla {    display: block !important;    width: 100% !important;    overflow-x: auto !important;     -webkit-overflow-scrolling: touch;  }
+  #mod-weekly table {    display: table !important;     width: 100% !important;    min-width: 600px;  }
+  #mod-weekly th, #mod-weekly td {    display: table-cell !important;     padding: 6px 4px !important;    font-size: 13px !important;    width: auto !important;    height: auto !important;  }
 }
 /* ── TOAST ─────────────────────────────────────────────── */
 #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a2e; color: #fff; padding: 10px 22px; border-radius: 8px; font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
@@ -231,7 +189,7 @@ const TEAM   = ['Mili','Loli','Kandeee','Antin','Mate','Cande'];
 const DIAS   = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 const DKEYS  = ['lun','mar','mie','jue','vie','sab'];
 const MESES  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const EMOJIS = ['🎉','📚','🏃','💼','🎨','🎤','⚽','🍕','🏖️','🎯','💡','🔧','🤝','🎭','🏋️','✈️','🎪','🌟','⚡','🎸','📋','📊','🕯️','🏕️','🎊'];
+const EMOJIS = ['🎉','📚','🏃','💼','🎨','🎤','⚽','🍕','🏖️','🌸','💡','🌱','🤝','🎭','🏋️','🚌','🎪','🌟','☀️','🎸','📋','📊','🕯️','🏕️','🎊'];
 
 // URL fija para automatizar la base de datos sin pantallas de carga iniciales
 let API_URL   = 'https://script.google.com/macros/s/AKfycbx4EKrGiLyckiVmRiizuYqEt-klkwyEOuOaXDCCNAp8CLpKz-shstT7KPqyiRCWc3dz/exec';
