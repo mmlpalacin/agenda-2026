@@ -412,18 +412,15 @@ function renderCal() {
         let htmlContenido = '<span class="sab-empty"></span>';
         if (hasEv) {
           let textoProcesado = ev.actividad.split('\n').map(l => {
-            if (l.toUpperCase().includes('RECESO')) {
-              return `<span class="tag-receso">${l}</span>`;
-            } else if (l.toUpperCase().includes('VS')) {
-              return `<span class="tag-partido">${l}</span>`;
-            }
+            if (l.toUpperCase().includes('RECESO')) return `<span class="tag-receso">${l}</span>`;
+            if (l.toUpperCase().includes('VS')) return `<span class="tag-partido">${l}</span>`;
             return `<span style="display:block; margin-bottom:2px; margin-top:10px">${l}</span>`;
           }).join('');
           
-          // Si el evento está marcado como especial, se le incrusta la clase de subrayado verde
+          // 👈 Si el evento está marcado como especial, se le incrusta la clase de subrayado verde
           const claseEspecial = ev.especial ? 'class="evento-especial-texto"' : '';
           htmlContenido = `${ev.emoji ? `<span class="sab-emoji">${ev.emoji}</span> ` : ''}<span ${claseEspecial}>${textoProcesado}</span>`;
-        }        }
+        }
 
         box.setAttribute('onclick', `openCalModal('${key}')`);
         box.innerHTML = `
