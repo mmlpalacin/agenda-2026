@@ -7,16 +7,21 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: system-ui, sans-serif; background: #f4f4f8; color: #1a1a2e; min-height: 100vh; }
+/* Custom fix para celulares - REESCRITO SIN PISARSE ENTRE MÓDULOS */
 @media (max-width: 600px) {
   
-  /* 1. Forzar a que SOLO el contenedor del calendario use 1 sola columna */
+  /* ==========================================
+     1. PLAN ANUAL (Mantiene tu diseño original)
+     ========================================== */
+  
+  /* Contenedor de los meses en vertical */
   .calendario-container, .grid-meses, #months-grid { 
     display: flex !important;
     flex-direction: column !important;
     width: 100% !important;
   }
 
-  /* 2. Corregir los encabezados verdes del calendario */
+  /* Los encabezados verdes de los meses (MARZO, ABRIL, etc.) */
   .month-hdr {
     display: block !important;
     width: 100% !important;
@@ -25,35 +30,44 @@ body { font-family: system-ui, sans-serif; background: #f4f4f8; color: #1a1a2e; 
     margin-top: 15px;
   }
 
-  /* 3. Ajustar las celdas del calendario para que no queden gigantes */
+  /* Los bloques blancos de los días (Sábados) dentro del plan anual */
   .sab-box {
     width: 100% !important;
     height: auto !important;
-    min-height: 60px;
+    min-height: 60px !important;
+    padding: 12px !important;
+    box-sizing: border-box;
+    border-bottom: 1px solid #eee;
     margin-bottom: 8px;
   }
 
-  /* 4. MANTENER LA VISTA SEMANAL EN FORMATO TABLA HORIZONTAL */
-  /* Permitimos que la tabla semanal haga scroll de izquierda a derecha en vez de aplastarse */
+  /* ==========================================
+     2. VISTA SEMANAL (Formato tabla horizontal con scroll)
+     ========================================== */
+  
+  /* Forzamos a la sección semanal a permitir scroll con el dedo en lugar de aplastarse */
   #mod-weekly .table-responsive, 
   #mod-weekly .contenedor-tabla {
     display: block !important;
     width: 100% !important;
-    overflow-x: auto !important; /* Activa scroll horizontal con el dedo */
+    overflow-x: auto !important; 
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Aseguramos que la tabla dentro de la sección semanal retenga su comportamiento original */
+  /* La tabla semanal retiene su estructura de filas y columnas intacta */
   #mod-weekly table {
-    display: table !important; /* Fuerza a mantener las columnas unidas */
+    display: table !important; 
     width: 100% !important;
-    min-width: 600px; /* Evita que las columnas se compriman demasiado */
+    min-width: 600px; /* Evita que las columnas se compriman */
   }
 
+  /* Las celdas de la grilla semanal se quedan una al lado de la otra */
   #mod-weekly th, #mod-weekly td {
-    display: table-cell !important; /* Devuelve el comportamiento de celda horizontal */
+    display: table-cell !important; 
     padding: 6px 4px !important;
     font-size: 13px !important;
+    width: auto !important; /* Cancela que se estiren al 100% */
+    height: auto !important;
   }
 }
 /* ── TOAST ─────────────────────────────────────────────── */
@@ -160,7 +174,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #4a4a8a
 .two-col { display: flex; gap: 10px; }
 .two-col .fr { flex: 1; }
 
-.evento-especial-texto {  display: inline-block;  background-color: #e6f4ea; color: #137333;  font-weight: bold;  padding: 4px 8px;  border-radius: 6px;  border-left: 4px solid #1e8e3e;  margin-top: 4px;  box-shadow: 0 1px 3px rgba(0,0,0,0.05); width: 100%; box-sizing: border-box;}
+.evento-especial-texto{background-color: #22c55e;  color: #e8e8e8;font-weight: 800;  padding: 4px 8px;  border-radius: 6px;  display: inline-block;  font-size: 11px;  margin-top: 5px;  border: 1px solid #2d9500;  text-transform: uppercase;  letter-spacing: 0.05em;box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
 .checkbox-apb {  display: flex;  align-items: center;  gap: 10px;  background: #f0fdf4;  padding: 12px;  border-radius: 8px;  margin-top: 12px;  border: 1px solid #bbf7d0;  cursor: pointer;  user-select: none;}
 .checkbox-apb input {  transform: scale(1.6);   cursor: pointer;}
 .dias-selector-container {  display: flex;  gap: 6px;  margin-top: 6px;  margin-bottom: 14px;}
