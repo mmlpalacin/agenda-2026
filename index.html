@@ -10,27 +10,33 @@ body { font-family: system-ui, sans-serif; background: #f4f4f8; color: #1a1a2e; 
 /* Custom fix para celulares - REESCRITO SIN TOCAR ESTRUCTURA DE MESES */
 @media (max-width: 600px) {
   
-  /* ==========================================
-     1. PLAN ANUAL (Mantiene tus columnas originales)
-     ========================================== */
-
-  /* Forzamos a que los bloques de los días dentro del mes ocupen todo el ancho si el mes se achica */
-  .sab-box {
+ /* 1. Forzar a que el contenedor del calendario use 1 sola columna */
+  .calendario-container, .grid-meses, table { 
+    display: flex !important;
+    flex-direction: column !important;
     width: 100% !important;
-    height: auto !important;
-    min-height: 60px !important;
-    padding: 12px !important;
-    box-sizing: border-box;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 8px;
   }
 
-  /* ==========================================
-     2. VISTA SEMANAL (Formato tabla horizontal con scroll)
-     ========================================== */
-  
-  /* Forzamos a la sección semanal a permitir scroll con el dedo en lugar de aplastarse */
-  #mod-weekly .table-responsive, 
+  /* 2. Corregir los encabezados verdes (MARZO, ABRIL, etc.) */
+  .clase-del-header-verde, th {
+    display: block !important;
+    width: 100% !important;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  /* 3. Aplastar los bloques blancos gigantes para que no tengan aire de más */
+  .clase-de-la-celda-blanca, td {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important; /* 👈 ¡CLAVE! Cancela el tamaño gigante */
+    min-height: 60px !important; /* Un alto mínimo prudente para celu */
+    padding: 12px !important;
+    box-sizing: border-box;
+    border-bottom: 1px solid #eee; /* Separador sutil entre meses */
+  }
+
+   #mod-weekly .table-responsive, 
   #mod-weekly .contenedor-tabla {
     display: block !important;
     width: 100% !important;
@@ -158,7 +164,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #4a4a8a
 .two-col { display: flex; gap: 10px; }
 .two-col .fr { flex: 1; }
 
-.evento-especial-texto{background-color: #22c55e;  color: #e8e8e8;font-weight: 800; border-radius: 6px;  font-size: 11px;  border: 1px solid #2d9500;  text-transform: uppercase;  letter-spacing: 0.05em;box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+.evento-especial-texto{background-color: #22c55e;  color: #000000;font-weight:500;padding: 0px 3px; border-radius: 6px;}
 .checkbox-apb {  display: flex;  align-items: center;  gap: 10px;  background: #f0fdf4;  padding: 12px;  border-radius: 8px;  margin-top: 12px;  border: 1px solid #bbf7d0;  cursor: pointer;  user-select: none;}
 .checkbox-apb input {  transform: scale(1.6);   cursor: pointer;}
 .dias-selector-container {  display: flex;  gap: 6px;  margin-top: 6px;  margin-bottom: 14px;}
