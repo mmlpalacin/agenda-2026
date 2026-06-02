@@ -190,7 +190,8 @@ const DIAS   = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 const DKEYS  = ['lun','mar','mie','jue','vie','sab'];
 const MESES  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const EMOJIS = ['🎉','📚','🏃','💼','🎨','🎤','⚽','🍕','🏖️','🌸','💡','🌱','🤝','🎭','🏋️','🚌','🎪','🌟','☀️','🎸','📋','📊','🕯️','🏕️','🎊'];
-
+let fechaReunionSeleccionada = '';
+  
 // URL fija para automatizar la base de datos sin pantallas de carga iniciales
 let API_URL   = 'https://script.google.com/macros/s/AKfycbx4EKrGiLyckiVmRiizuYqEt-klkwyEOuOaXDCCNAp8CLpKz-shstT7KPqyiRCWc3dz/exec';
 let calData   = {};    
@@ -699,6 +700,9 @@ function buscarMejorReunion() {
     return;
   }
 
+  // Guardamos la fecha de este slot para que esté disponible globalmente
+  fechaReunionSeleccionada = mejorSlot.fecha;
+
   // Convertir minutos a "HH:mm"
   const minToStr = m => `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
   const hiStr = minToStr(mejorSlot.inicio);
@@ -709,55 +713,122 @@ function buscarMejorReunion() {
 
   const ocupadosHTML = mejorSlot.ocupados.length
     ? `<div style="margin-top:10px;padding:8px 10px;background:#fff0e8;border:1px solid #f0b090;border-radius:8px;font-size:12px;color:#7a3010;">
-        ⚠️ <strong>No pueden:</strong> ${mejorSlot.ocupados.join(', ')}
+        ⚠️ <strong>Originalmente no pueden:</strong> ${mejorSlot.ocupados.join(', ')}
        </div>`
     : `<div style="margin-top:10px;padding:8px 10px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;font-size:12px;color:#166534;">
-        🎉 <strong>¡Todos disponibles!</strong>
+        🎉 <strong>¡Todos disponibles en este horario!</strong>
        </div>`;
 
-  document.getElementById('mtitle').textContent = '📅 Mejor horario encontrado';
+  // Generamos dinámicamente las opciones de checkboxes basadas en TEAM
+  const checkboxesHTML = TEAM.map(m => {
+    const estaLibre = mejorSlot.libres.includes(m);
+    return `
+      <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; background: #fafafa; padding: 6px; border: 1px solid #eee; border-radius: 6px;">
+        <input type="checkbox" value="${m}" class="chk-asistencia" ${estaLibre ? 'checked' : ''}>
+        ${m}
+      </label>
+    `;
+  }).join('');
+
+  document.getElementById('mtitle').textContent = '👥 Planificar Reunión de Equipo';
   document.getElementById('mbody').innerHTML = `
-    <div style="text-align:center;padding:14px 0 8px;">
-      <div style="font-size:22px;font-weight:800;color:#1e3a1e;">${diaLabel} ${fechaLabel}</div>
-      <div style="font-size:32px;font-weight:900;color:#2d9500;margin:6px 0;">${hiStr} – ${hfStr}</div>
-      <div style="font-size:12px;color:#888;">1:30 hs · ${mejorSlot.libres.length} de ${TEAM.length} integrantes libres</div>
+    <div style="text-align:center; padding: 4px 0 10px; border-bottom: 1px dashed #e0e0f0;">
+      <div style="font-size:13px; color:#666; font-weight:600; text-transform:uppercase;">Sugerencia Automática</div>
+      <div style="font-size:20px; font-weight:800; color:#1e3a1e; margin-top:2px;">${diaLabel} ${fechaLabel}</div>
+      <div style="font-size:12px; color:#888; margin-top:2px;">${mejorSlot.libres.length} de ${TEAM.length} libres originalmente</div>
     </div>
-    <div style="padding:8px 10px;background:#f0f4ff;border:1px solid #c0c8f0;border-radius:8px;font-size:12px;color:#1a1a2e;">
-      ✅ <strong>Pueden:</strong> ${mejorSlot.libres.join(', ')}
-    </div>
+
     ${ocupadosHTML}
-    <div class="fr" style="margin-top:14px;">
-      <label class="fl">Descripción de la reunión</label>
-      <input type="text" id="mf-reunion-desc" value="Reunión semanal" />
-    </div>`;
+
+    <div style="margin-top:16px; background: #fff; border: 1px solid #d0d0e8; border-radius: 10px; padding: 12px; text-align: left;">
+      <div style="font-size: 12px; font-weight: 700; color: #2d9500; margin-bottom: 10px; text-transform: uppercase;">Ajustes finales de la reunión:</div>
+      
+      <div class="fr">
+        <label class="fl">Descripción</label>
+        <input type="text" id="mf-reunion-desc" value="Reunión semanal" />
+      </div>
+
+      <div class="two-col" style="margin-top: 8px;">
+        <div class="fr">
+          <label class="fl">Hora inicio</label>
+          <input type="time" id="reunion-manual-hi" value="${hiStr}"/>
+        </div>
+        <div class="fr">
+          <label class="fl">Hora fin</label>
+          <input type="time" id="reunion-manual-hf" value="${hfStr}"/>
+        </div>
+      </div>
+
+      <div class="fr" style="margin-top: 10px;">
+        <label class="fl">¿Quiénes asisten finalmente?</label>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 4px;">
+          ${checkboxesHTML}
+        </div>
+      </div>
+    </div>
+  `;
 
   document.getElementById('mactions').innerHTML = `
     <button class="btn" onclick="closeOverlay()">Cancelar</button>
-    <button class="btn primary" onclick="confirmarReunion('${mejorSlot.fecha}','${hiStr}','${hfStr}')">✅ Confirmar y guardar</button>`;
+    <button class="btn primary" onclick="confirmarReunion()">✅ Confirmar y guardar</button>`;
 
   openOverlay();
 }
 
-async function confirmarReunion(fecha, hi, hf) {
+async function confirmarReunion() {
+  // 1. Leemos lo que está en pantalla en el momento de hacer clic en Confirmar
   const desc = document.getElementById('mf-reunion-desc').value.trim() || 'Reunión semanal';
+  const hiManual = document.getElementById('reunion-manual-hi').value;
+  const hfManual = document.getElementById('reunion-manual-hf').value;
+  
+  // 2. Filtramos el equipo quedándonos solo con los nombres que tengan el checkbox tildado
+  const checkboxes = document.querySelectorAll('.chk-asistencia:checked');
+  const integrantesSeleccionados = Array.from(checkboxes).map(chk => chk.value);
+
+  if (!hiManual || !hfManual) {
+    toast('⚠️ Por favor definí una hora de inicio y fin');
+    return;
+  }
+  if (integrantesSeleccionados.length === 0) {
+    toast('⚠️ Seleccioná al menos a un integrante para la reunión');
+    return;
+  }
+
   setLoading(true, 'Guardando reunión...');
   try {
-    const ops = TEAM
-      .filter(m => !excepciones.some(e => e.miembro === m && e.fecha === fecha && e.tipo === 'reunion'))
-      .map(m => apiPost({ action: 'saveExcepcion', miembro: m, fecha, hi, hf, estado: 'ocupado', desc, tipo: 'reunion' }));
+    // 3. Mandamos las excepciones al Excel solo para los chicos seleccionados en la lista
+    const ops = integrantesSeleccionados.map(m => 
+      apiPost({ 
+        action: 'saveExcepcion', 
+        miembro: m, 
+        fecha: fechaReunionSeleccionada, 
+        hi: hiManual, 
+        hf: hfManual, 
+        estado: 'ocupado', 
+        desc: desc, 
+        tipo: 'reunion' 
+      })
+    );
     await Promise.all(ops);
+
+    // 4. Actualizamos el estado local de la app
     const excRaw = await apiGet({ action: 'getAllExcepciones' });
     excepciones = (excRaw || []).map(e => ({
       id: e.ID_Excepcion, fecha: e.Fecha_Especifica?.slice(0, 10),
       miembro: e.Miembro, hi: e.Hora_Inicio, hf: e.Hora_Fin,
       estado: e.Estado, desc: e.Descripcion, tipo: e.Tipo, origen: e.Origen_Rutina,
     }));
+
     closeOverlay();
     renderWeekly();
-    toast('✅ Reunión guardada');
-  } catch (e) { toast('❌ ' + e.message); } finally { setLoading(false); }
+    toast('✅ Reunión guardada perfectamente');
+  } catch (e) { 
+    toast('❌ ' + e.message); 
+  } finally { 
+    setLoading(false); 
+  }
 }
-
+  
 async function doSuspend(rutinaId, miembro, fecha) {
   if (!confirm(`¿Suspender este bloque solo para el ${fecha}?`)) return;
   setLoading(true,'Guardando excepción...');
