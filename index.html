@@ -146,6 +146,7 @@ b {color: #ec0a0a;}
     <button class="nav-btn active" onclick="showMod('cal',this)">📆 Calendario anual</button>
     <button class="nav-btn" onclick="showMod('weekly',this)">📊 Disponibilidad semanal</button>
     <button class="nav-btn" onclick="showMod('rutinas',this)">🔁 Rutinas</button>
+    <button class="nav-btn" onclick="showMod('diarios', this)">📝 Diarios de Plani</button>
   </div>
   <div id="main">
     <div id="mod-cal" class="module visible">
@@ -174,6 +175,15 @@ b {color: #ec0a0a;}
       </div>
       <div id="rutinas-list"></div>
     </div>
+    <div id="mod-diarios" class="module">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h2 style="font-size: 18px; font-weight: 700;">📝 Informes de Planis</h2>
+    <button class="btn primary" onclick="openNuevoDiarioModal()" style="padding: 6px 12px; font-size: 13px;">+ Nuevo Informe</button>
+  </div>
+
+  <div id="lista-diarios" style="display: flex; flex-direction: column; gap: 12px;">
+    </div>
+</div>
   </div>
 </div>
 
@@ -194,7 +204,8 @@ let fechaReunionSeleccionada = '';
   
 // URL fija para automatizar la base de datos sin pantallas de carga iniciales
 let API_URL   = 'https://script.google.com/macros/s/AKfycbx4EKrGiLyckiVmRiizuYqEt-klkwyEOuOaXDCCNAp8CLpKz-shstT7KPqyiRCWc3dz/exec';
-let calData   = {};    
+let calData   = {}; 
+let diarios = [];
 let rutinas   = [];
 let excepciones = [];
 let weekOffset  = 0;
@@ -259,7 +270,7 @@ async function bootApp() {
   try {
     await loadAll();
     document.getElementById('app').style.display = 'block';
-    renderCal(); renderWeekly(); renderRutinas(); updateBanner();
+    renderCal(); renderWeekly(); renderRutinas();renderDiarios(); updateBanner();
   } catch(err) {
     toast('❌ No se pudo conectar: ' + err.message, 5000);
   } finally { setLoading(false); }
@@ -306,6 +317,13 @@ async function loadAll() {
     tipo: e.Tipo, 
     origen: e.Origen_Rutina,
   }));
+
+  diarios = (initData.diarios || []).map(d => ({
+    id: d.ID_Diario,
+    fecha: d.Fecha ? (d.Fecha.length > 10 ? d.Fecha.slice(0,10) : d.Fecha) : '',
+    titulo: d.Titulo || '',
+    contenido: d.Contenido || ''
+  })).sort((a,b) => new Date(b.fecha) - new Date(a.fecha)); // Ordenados del más nuevo al más viejo
 }
 
 // ─────────────────────────────────────────────
@@ -1023,6 +1041,111 @@ async function doDelRutina(id) {
   } catch(e){ toast('❌ '+e.message); } finally{ setLoading(false); }
 }
 
+// Muestra el listado de diarios en pantalla
+function renderDiarios() {
+  const container = document.getElementById('lista-diarios');
+  if (diarios.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:30px; color:#888; background:#fff; border-radius:12px; border:1px dashed #ccc;">
+        Todavía no hay diarios o resúmenes guardados. ¡Hacé clic en "+ Nuevo Informe" para escribir el primero!
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = diarios.map(d => {
+    const fStr = new Date(d.fecha + 'T12:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+    return `
+      <div style="background:#fff; border:1px solid #e0e0f0; border-radius:12px; padding:14px; box-shadow:0 2px 4px rgba(0,0,0,0.02); position:relative;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+          <div>
+            <span style="font-size:11px; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-weight:600;">${fStr}</span>
+            <h3 style="font-size:15px; font-weight:700; color:#1a1a2e; margin-top:4px;">${escapeHtml(d.titulo)}</h3>
+          </div>
+          <button onclick="doDelDiario('${d.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:14px;" title="Eliminar">🗑️</button>
+        </div>
+        <p style="font-size:13px; color:#4a4a6a; white-space:pre-wrap; line-height:1.5;">${escapeHtml(d.contenido)}</p>
+      </div>
+    `;
+  }).join('');
+}
+
+// Helper rápido para evitar inyecciones de código en los textos ingresados
+function escapeHtml(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+// Abre el Modal (aprovechamos tu overlay existente) con el formulario de redacción
+function openNuevoDiarioModal() {
+  const hoyStr = fmtKey(new Date());
+  
+  document.getElementById('mtitle').textContent = '📝 Redactar Informe de Plani';
+  document.getElementById('mbody').innerHTML = `
+    <div class="fr">
+      <label class="fl">Fecha de la plani / actividad</label>
+      <input type="date" id="diario-fecha" value="${hoyStr}" />
+    </div>
+    <div class="fr" style="margin-top:10px;">
+      <label class="fl">Título o Tema (Ej: Convivencia, Resumen de Juego)</label>
+      <input type="text" id="diario-titulo" placeholder="¿De qué se habló o qué se hizo?" />
+    </div>
+    <div class="fr" style="margin-top:10px;">
+      <label class="fl">Resumen / Notas detalladas</label>
+      <textarea id="diario-contenido" style="width:100%; min-height:150px; padding:8px; border:1px solid #ccc; border-radius:6px; font-family:inherit; font-size:13px; resize:vertical;" placeholder="Escribí acá los acuerdos asentados, resumen de la actividad, sensaciones del equipo, etc..."></textarea>
+    </div>
+  `;
+  
+  document.getElementById('mactions').innerHTML = `
+    <button class="btn" onclick="closeOverlay()">Cancelar</button>
+    <button class="btn primary" onclick="doGuardarDiario()">💾 Guardar en Bitácora</button>
+  `;
+  openOverlay();
+}
+
+// Envía la nota al backend de Google Sheets
+async function doGuardarDiario() {
+  const fecha = document.getElementById('diario-fecha').value;
+  const titulo = document.getElementById('diario-titulo').value.trim();
+  const contenido = document.getElementById('diario-contenido').value.trim();
+
+  if (!fecha || !titulo || !contenido) {
+    toast('⚠️ Completá todos los campos antes de guardar');
+    return;
+  }
+
+  setLoading(true, 'Guardando en la base de datos...');
+  try {
+    const res = await apiPost({ action: 'saveDiario', fecha, titulo, contenido });
+    
+    // Lo sumamos localmente al inicio del array para no tener que hacer un get completo si no querés
+    diarios.unshift({ id: res.id, fecha, titulo, contenido });
+    diarios.sort((a,b) => new Date(b.fecha) - new Date(a.fecha)); // Reordenar
+    
+    closeOverlay();
+    renderDiarios();
+    toast('✅ Diario guardado correctamente');
+  } catch(e) {
+    toast('❌ Error al guardar: ' + e.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+// Función para eliminar un diario
+async function doDelDiario(id) {
+  if (!confirm('¿Estás seguro de eliminar este informe de la bitácora?')) return;
+  setLoading(true, 'Eliminando...');
+  try {
+    await apiPost({ action: 'deleteDiario', id });
+    diarios = diaries = diarios.filter(d => d.id !== id);
+    renderDiarios();
+    toast('🗑️ Informe eliminado');
+  } catch(e) {
+    toast('❌ ' + e.message);
+  } finally {
+    setLoading(false);
+  }
+}
+  
 // ─────────────────────────────────────────────
 //  NAV / MODAL
 // ─────────────────────────────────────────────
@@ -1032,6 +1155,7 @@ function showMod(m, btn) {
   document.getElementById('mod-'+m).classList.add('visible');
   btn.classList.add('active');
   if(m==='weekly') renderWeekly();
+  if(m==='diarios') renderDiarios();
 }
 function openOverlay()  { document.getElementById('overlay').classList.add('open'); }
 function closeOverlay(e) {
