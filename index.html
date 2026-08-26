@@ -326,8 +326,8 @@ async function loadAll() {
       calData[key] = {
         actividad: r.Actividad || '',
         emoji: r.Emoji || '',
-        especial: r.Especial === 'SÍ',
-        sabadoBase: r.Sabado_Base || key
+        especial: String(r.Especial).toUpperCase() === 'SI',
+        sabadoBase: r.Sabado_Base ? r.Sabado_Base.slice(0,10) : null
       };
     }
   });
