@@ -249,7 +249,6 @@ function getEventosIntermedios(sabado) {
     .filter(([fecha, ev]) => {
       return (
         ev.actividad &&
-        ev.especial &&
         ev.sabadoBase === sabadoKey &&
         fecha !== sabadoKey
       );
