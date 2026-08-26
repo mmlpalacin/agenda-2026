@@ -262,6 +262,7 @@ function getEventosIntermedios(sabado) {
     .filter(([fecha, ev]) => {
       return (
         ev.actividad &&
+        ev.especial &&
         ev.sabadoBase === sabadoKey &&
         fecha !== sabadoKey
       );
@@ -451,10 +452,10 @@ function renderCal() {
         const emoji = evento.emoji
           ? `${evento.emoji} `
           : '';
-        const claseEspecial = evento.especial ? ' evento-especial-texto' : '';
+        
         return `
           <div 
-            class="fecha-intermedia${evento.especial ? ' evento-especial-texto' : ''}"
+            class="fecha-intermedia'}"
             onclick="event.stopPropagation(); openCalModal('${fecha}')" 
           >
             <span class="fecha-intermedia-fecha">${fechaTexto}</span>
