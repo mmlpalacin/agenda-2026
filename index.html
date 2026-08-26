@@ -18,23 +18,10 @@ body { font-family: system-ui, sans-serif; background: #f4f4f8; color: #1a1a2e; 
   #mod-weekly th, #mod-weekly td {    display: table-cell !important;     padding: 6px 4px !important;    font-size: 13px !important;    width: auto !important;    height: auto !important;  }
 }
 
-.fecha-intermedia {
-  background: #7bfbaa;
-  color: #000;
-  font-weight: 700;
-  padding: 6px 9px;
-  border-radius: 12px;
-  display: block;
-  font-size: 11px;
-  line-height: 1.25;
-  cursor: pointer;
-  margin-top: auto;
-  box-sizing: border-box;
-}
-
+.fecha-intermedia {  background: #7bfbaa;  color: #000;  font-weight: 700;  padding: 6px 9px;  border-radius: 12px;  display: block;  font-size: 11px;  line-height: 1.25;  cursor: pointer;  margin-top: auto;  box-sizing: border-box;}
 .fecha-intermedia:hover {transform: scale(1.02);}
-
 .fecha-intermedia-fecha {  background-color: #22c55e; box-sizing: border-box; width: 100%;color: #000000;font-weight:500;padding: 4px 6px; border-radius: 6px;display: block;margin-top: 4px;}
+  
 /* ── TOAST ─────────────────────────────────────────────── */
 #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a2e; color: #fff; padding: 10px 22px; border-radius: 8px; font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
 #toast.show { opacity: 1; }
@@ -455,11 +442,11 @@ function renderCal() {
         
         return `
           <div 
-            class="fecha-intermedia'}"
+            class="fecha-intermedia"
             onclick="event.stopPropagation(); openCalModal('${fecha}')" 
           >
-            <span class="fecha-intermedia-fecha">${fechaTexto}</span>
-            ${emoji}${evento.actividad} 
+            <span class="fecha-intermedia-fecha">${fechaTexto} <br> ${evento.actividad} </span>
+            ${emoji}
           </div>
         `;
       }).join('');
