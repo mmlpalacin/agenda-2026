@@ -413,9 +413,12 @@ function renderCal() {
       box.className = 'sab-box';
 
       if (s) {
-        const key = fmtKey(s);
-        const ev = calData[key];
-        const hasEv = ev && ev.actividad;
+        const key = fmtKey(s); 
+        const ev = calData[key]; 
+        
+        // Solo es evento normal si su fecha coincide con su sábado base
+        const esEventoNormal = ev && ev.actividad && (!ev.sabadoBase || ev.sabadoBase === key);
+        const hasEv = esEventoNormal;
         const eventosIntermedios = getEventosIntermedios(s);
         
         let htmlContenido = '<span class="sab-empty"></span>';
