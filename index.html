@@ -3,13 +3,34 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Agenda del Equipo</title>
+<title>Agenda de Horneros</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: system-ui, sans-serif; background: #f4f4f8; color: #1a1a2e; min-height: 100vh; }
 /* Custom fix para celulares - REESCRITO SIN TOCAR ESTRUCTURA DE MESES */
 @media (max-width: 600px) {
-  
+  .fecha-intermedia {
+  background: #b8ed0f;
+  color: #000;
+  font-weight: 700;
+  padding: 6px 9px;
+  border-radius: 12px;
+  display: block;
+  margin-top: 10px;
+  font-size: 11px;
+  line-height: 1.25;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.fecha-intermedia:hover {
+  transform: scale(1.02);
+}
+
+.fecha-intermedia-fecha {
+  font-weight: 900;
+  margin-right: 3px;
+}
   .calendario-container, .grid-meses, table { display: flex !important;    flex-direction: column !important;    width: 100% !important;  }
   .clase-del-header-verde, th {    display: block !important;    width: 100% !important;    text-align: center;    box-sizing: border-box;  }
   .clase-de-la-celda-blanca, td {    display: block !important;    width: 100% !important;    height: auto !important;    min-height: 60px !important;  padding: 12px !important;    box-sizing: border-box;    border-bottom: 1px solid #eee;   }
@@ -144,9 +165,9 @@ b {color: #ec0a0a;}
   </div>
   <div id="nav">
     <button class="nav-btn active" onclick="showMod('cal',this)">📆 Calendario anual</button>
+    <button class="nav-btn" onclick="showMod('diarios', this)">📝 Diarios de Plani</button>
     <button class="nav-btn" onclick="showMod('weekly',this)">📊 Disponibilidad semanal</button>
     <button class="nav-btn" onclick="showMod('rutinas',this)">🔁 Rutinas</button>
-    <button class="nav-btn" onclick="showMod('diarios', this)">📝 Diarios de Plani</button>
   </div>
   <div id="main">
     <div id="mod-cal" class="module visible">
@@ -195,7 +216,7 @@ b {color: #ec0a0a;}
 // ─────────────────────────────────────────────
 //  CONFIG & STATE
 // ─────────────────────────────────────────────
-const TEAM   = ['Mili','Loli','Kandeee','Antin','Mate','Cande'];
+const TEAM   = ['Mili','Kandeee','Antin','Mate'];
 const DIAS   = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 const DKEYS  = ['lun','mar','mie','jue','vie','sab'];
 const MESES  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -236,6 +257,21 @@ function getSabados(year) {
   while(d.getFullYear()===year){ s.push(new Date(d)); d.setDate(d.getDate()+7); }
   return s;
 }
+
+function getEventosIntermedios(sabado) {
+  const sabadoKey = fmtKey(sabado);
+
+  return Object.entries(calData)
+    .filter(([fecha, ev]) => {
+      return (
+        ev.actividad &&
+        ev.sabadoBase === sabadoKey &&
+        fecha !== sabadoKey
+      );
+    })
+    .sort((a, b) => new Date(a[0]) - new Date(b[0]));
+}
+  
 function getWeekStart(offset) {
   const now=new Date(), day=now.getDay();
   const mon=new Date(now); mon.setDate(now.getDate()-(day===0?6:day-1)+offset*7); mon.setHours(0,0,0,0); return mon;
@@ -286,11 +322,11 @@ async function loadAll() {
     // Si la fecha ya viene en formato texto yyyy-MM-dd, la usamos directo. Si viene más larga, hacemos slice.
     const key = r.ID_Fecha ? (r.ID_Fecha.length > 10 ? r.ID_Fecha.slice(0,10) : r.ID_Fecha) : null;
     if (key) {
-      calData[key] = { 
-        actividad: r.Actividad || '', 
+      calData[key] = {
+        actividad: r.Actividad || '',
         emoji: r.Emoji || '',
-        // ⚠️ CORRECCIÓN: Mapeamos 'Especial' (con Mayúscula) y verificamos si dice 'SÍ'
-        especial: r.Especial === 'SÍ' 
+        especial: r.Especial === 'SÍ',
+        sabadoBase: r.Sabado_Base || key
       };
     }
   });
@@ -395,7 +431,8 @@ function renderCal() {
         const key = fmtKey(s);
         const ev = calData[key];
         const hasEv = ev && ev.actividad;
-
+        const eventosIntermedios = getEventosIntermedios(s);
+        
         let htmlContenido = '<span class="sab-empty"></span>';
         if (hasEv) {
           let textoProcesado = ev.actividad.split('\n').map(function(l) {
@@ -408,14 +445,36 @@ function renderCal() {
           const emojiHtml = ev.emoji ? '<span class="sab-emoji">' + ev.emoji + '</span> ' : '';
           htmlContenido = emojiHtml + '<span ' + claseEspecial + '>' + textoProcesado + '</span>';
         }
-
+      const htmlIntermedios = eventosIntermedios.map(([fecha, evento]) => {
+        const d = new Date(fecha + 'T12:00:00');
+      
+        const fechaTexto =
+          `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth()+1).padStart(2, '0')}`;
+      
+        const emoji = evento.emoji
+          ? `${evento.emoji} `
+          : '';
+      
+        return `
+          <div
+            class="fecha-intermedia"
+            onclick="event.stopPropagation(); openCalModal('${fecha}')"
+          >
+            <span class="fecha-intermedia-fecha">${fechaTexto}</span>
+            ${emoji}${evento.actividad}
+          </div>
+        `;
+      }).join('');
         // Usamos comillas simples y dobles estándar para evitar conflictos de backticks
         box.setAttribute('onclick', "openCalModal('" + key + "')");
         box.innerHTML = `
           <div class="sab-num">${String(s.getDate()).padStart(2, '0')}</div>
+        
           <div class="sab-body">
             ${htmlContenido}
+            ${htmlIntermedios}
           </div>
+        
           <span class="sab-edit-hint">✏️</span>
         `;
       } else {
@@ -424,6 +483,8 @@ function renderCal() {
           <div class="sab-body"><span class="sab-empty"></span></div>
         `;
       }
+
+      
       grid.appendChild(box);
     });
   }
@@ -431,9 +492,10 @@ function renderCal() {
 
 function openNewCal() {
   selEmoji='';
-  document.getElementById('mtitle').textContent='Nuevo evento de sábado';
+  document.getElementById('mtitle').textContent='Nuevo evento';
   document.getElementById('mbody').innerHTML=`
-    <div class="fr"><label class="fl">Fecha (debe ser sábado)</label><input type="date" id="mf-fecha"/></div>
+    <div class="fr"><label class="fl">Fecha del evento</label><input type="date" id="mf-fecha"/></div>
+    <div class="fr"><label class="fl">Sábado donde se mostrará</label><input type="date" id="mf-sabado-base"/></div>
     <div class="fr"><label class="fl">Descripción</label><textarea id="mf-act" rows="3" placeholder="Nombre del evento..."></textarea></div>
     <div class="fr">
       <label class="checkbox-apb">
@@ -450,7 +512,8 @@ function openCalModal(key) {
   const ev = calData[key]||{actividad:'',emoji:'',especial:false};
   selEmoji = ev.emoji||'';
   const d = new Date(key+'T12:00:00');
-  document.getElementById('mtitle').textContent=`Sábado ${d.getDate()} de ${MESES[d.getMonth()]}`;
+  const esSabado = d.getDay() === 6;
+  document.getElementById('mtitle').textContent = esSabado? `Sábado ${d.getDate()} de ${MESES[d.getMonth()]}` : `Evento del ${d.getDate()} de ${MESES[d.getMonth()]}`;
   document.getElementById('mbody').innerHTML=`
     <div class="fr"><label class="fl">Descripción</label><textarea id="mf-act" rows="3">${ev.actividad}</textarea></div>
     <div class="fr">
@@ -464,20 +527,34 @@ function openCalModal(key) {
   document.getElementById('mactions').innerHTML=`${delBtn}<button class="btn" onclick="closeOverlay()">Cancelar</button><button class="btn primary" id="btn-save-cal" onclick="doSaveCal('${key}')">Guardar</button>`;
   openOverlay();
 }
+function getSabadoBase(fecha) {
+  const d = new Date(fecha + 'T12:00:00');
 
+  // Si ya es sábado, es el mismo día
+  if (d.getDay() === 6) {
+    return fecha;
+  }
+
+  // Retroceder hasta el sábado anterior
+  d.setDate(d.getDate() - ((d.getDay() + 1) % 7));
+
+  return fmtKey(d);
+}
+  
 async function saveCalNew() {
   const fecha = document.getElementById('mf-fecha').value;
   const act   = document.getElementById('mf-act').value.trim();
   const especial = document.getElementById('mf-especial').checked;
   if (!fecha||!act) { toast('⚠️ Completá fecha y descripción'); return; }
-  
+
+  const sabadoBase = getSabadoBase(fecha);
   const btn = document.getElementById('btn-save-cal');
   if(btn) btn.disabled = true; // APB: Deshabilita click doble
 
   setLoading(true,'Guardando...');
   try {
-    await apiPost({action:'saveCalEvent', fecha, actividad:act, emoji:selEmoji, especial});
-    calData[fecha] = {actividad:act, emoji:selEmoji, especial};
+    await apiPost({action:'saveCalEvent', fecha, actividad:act, emoji:selEmoji, especial, sabadoBase});
+    calData[fecha] = {actividad:act, emoji:selEmoji, especial, sabadoBase};
     closeOverlay(); renderCal(); updateBanner(); toast('✅ Evento guardado');
   } catch(e){ toast('❌ '+e.message); if(btn) btn.disabled = false; } finally{ setLoading(false); }
 }
@@ -491,8 +568,9 @@ async function doSaveCal(key) {
 
   setLoading(true,'Guardando...');
   try {
-    await apiPost({action:'saveCalEvent', fecha:key, actividad:act, emoji:selEmoji, especial});
-    calData[key] = {actividad:act, emoji:selEmoji, especial};
+    const sabadoBase = (calData[key] && calData[key].sabadoBase)? calData[key].sabadoBase : getSabadoBase(key);
+    await apiPost({action:'saveCalEvent', fecha:key, actividad:act, emoji:selEmoji, especial :especial, sabadoBase: sabadoBase});
+    calData[key] = {actividad:act, emoji:selEmoji, especial:especial, sabadoBase: sabadoBase};
     closeOverlay(); renderCal(); updateBanner(); toast('✅ Evento actualizado');
   } catch(e){ toast('❌ '+e.message); if(btn) btn.disabled = false; } finally{ setLoading(false); }
 }
