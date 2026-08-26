@@ -451,14 +451,14 @@ function renderCal() {
         const emoji = evento.emoji
           ? `${evento.emoji} `
           : '';
-      
+        const claseEspecial = evento.especial ? ' evento-especial-texto' : '';
         return `
-          <div
-            class="fecha-intermedia"
-            onclick="event.stopPropagation(); openCalModal('${fecha}')"
+          <div 
+            class="fecha-intermedia${evento.especial ? ' evento-especial-texto' : ''}"
+            onclick="event.stopPropagation(); openCalModal('${fecha}')" 
           >
             <span class="fecha-intermedia-fecha">${fechaTexto}</span>
-            ${emoji}${evento.actividad}
+            ${emoji}${evento.actividad} 
           </div>
         `;
       }).join('');
