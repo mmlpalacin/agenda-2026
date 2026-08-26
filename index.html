@@ -173,6 +173,7 @@ b {color: #ec0a0a;}
     <div id="mod-cal" class="module visible">
       <div class="sec-header">
         <div><div class="sec-title" id="calendar-title">Sábados</div><div class="sec-sub">Hacé clic en un sábado para asignar o editar un evento</div></div>
+        <button class="btn primary" onclick="openNewCal()">+ Nuevo evento</button>
       </div>
       <div class="cal-container">
         <div class="months-grid" id="months-grid"></div>
@@ -492,11 +493,22 @@ function renderCal() {
 
 function openNewCal() {
   selEmoji='';
-  document.getElementById('mtitle').textContent='Nuevo evento';
+  const hoy = fmtKey(new Date());
+  document.getElementById('mtitle').textContent='Nuevo evento de calendario';
   document.getElementById('mbody').innerHTML=`
-    <div class="fr"><label class="fl">Fecha del evento</label><input type="date" id="mf-fecha"/></div>
-    <div class="fr"><label class="fl">Sábado donde se mostrará</label><input type="date" id="mf-sabado-base"/></div>
-    <div class="fr"><label class="fl">Descripción</label><textarea id="mf-act" rows="3" placeholder="Nombre del evento..."></textarea></div>
+    <div class="fr">
+      <label class="fl">Fecha real del evento</label>
+      <input type="date" id="mf-fecha" value="${hoy}"/>
+    </div>
+    <div class="fr">
+      <label class="fl">Sábado donde se mostrará</label>
+      <input type="date" id="mf-sabado-base"/>
+      <div style="font-size:10px;color:#777;margin-top:4px;">Puede ser cualquier sábado. La fecha real puede ser miércoles, jueves, etc.</div>
+    </div>
+    <div class="fr">
+      <label class="fl">Descripción</label>
+      <textarea id="mf-act" rows="3" placeholder="Nombre del evento..."></textarea>
+    </div>
     <div class="fr">
       <label class="checkbox-apb">
         <input type="checkbox" id="mf-especial">
@@ -515,6 +527,8 @@ function openCalModal(key) {
   const esSabado = d.getDay() === 6;
   document.getElementById('mtitle').textContent = esSabado? `Sábado ${d.getDate()} de ${MESES[d.getMonth()]}` : `Evento del ${d.getDate()} de ${MESES[d.getMonth()]}`;
   document.getElementById('mbody').innerHTML=`
+    <div class="fr"><label class="fl">Fecha real del evento</label><input type="date" id="mf-fecha-edicion" value="${key}" disabled></div>
+    ${!esSabado ? `<div class="fr"><label class="fl">Sábado donde se mostrará</label><input type="date" id="mf-sabado-base-edicion" value="${ev.sabadoBase || getSabadoBase(key)}"/><div style="font-size:10px;color:#777;margin-top:4px;">Debe ser sábado.</div></div>` : ''}
     <div class="fr"><label class="fl">Descripción</label><textarea id="mf-act" rows="3">${ev.actividad}</textarea></div>
     <div class="fr">
       <label class="checkbox-apb">
@@ -543,20 +557,32 @@ function getSabadoBase(fecha) {
   
 async function saveCalNew() {
   const fecha = document.getElementById('mf-fecha').value;
-  const act   = document.getElementById('mf-act').value.trim();
+  const act = document.getElementById('mf-act').value.trim();
   const especial = document.getElementById('mf-especial').checked;
-  if (!fecha||!act) { toast('⚠️ Completá fecha y descripción'); return; }
+  const sabadoBase = document.getElementById('mf-sabado-base').value;
 
-  const sabadoBase = getSabadoBase(fecha);
+  if (!fecha || !act || !sabadoBase) {
+    toast('⚠️ Completá fecha, sábado donde se mostrará y descripción');
+    return;
+  }
+
+  const dSabado = new Date(sabadoBase + 'T12:00:00');
+  if (dSabado.getDay() !== 6) {
+    toast('⚠️ La fecha de "Sábado donde se mostrará" debe ser un sábado');
+    return;
+  }
+
   const btn = document.getElementById('btn-save-cal');
-  if(btn) btn.disabled = true; // APB: Deshabilita click doble
-
+  if (btn) btn.disabled = true;
   setLoading(true,'Guardando...');
   try {
     await apiPost({action:'saveCalEvent', fecha, actividad:act, emoji:selEmoji, especial, sabadoBase});
     calData[fecha] = {actividad:act, emoji:selEmoji, especial, sabadoBase};
     closeOverlay(); renderCal(); updateBanner(); toast('✅ Evento guardado');
-  } catch(e){ toast('❌ '+e.message); if(btn) btn.disabled = false; } finally{ setLoading(false); }
+  } catch(e) {
+    toast('❌ '+e.message);
+    if (btn) btn.disabled = false;
+  } finally { setLoading(false); }
 }
 
 async function doSaveCal(key) {
@@ -568,7 +594,11 @@ async function doSaveCal(key) {
 
   setLoading(true,'Guardando...');
   try {
-    const sabadoBase = (calData[key] && calData[key].sabadoBase)? calData[key].sabadoBase : getSabadoBase(key);
+    let sabadoBase = (calData[key] && calData[key].sabadoBase) ? calData[key].sabadoBase : getSabadoBase(key);
+    const campoSabado = document.getElementById('mf-sabado-base-edicion');
+    if (campoSabado) sabadoBase = campoSabado.value;
+    const dSabado = new Date(sabadoBase + 'T12:00:00');
+    if (dSabado.getDay() !== 6) { toast('⚠️ El sábado base debe ser un sábado'); if (btn) btn.disabled = false; setLoading(false); return; }
     await apiPost({action:'saveCalEvent', fecha:key, actividad:act, emoji:selEmoji, especial :especial, sabadoBase: sabadoBase});
     calData[key] = {actividad:act, emoji:selEmoji, especial:especial, sabadoBase: sabadoBase};
     closeOverlay(); renderCal(); updateBanner(); toast('✅ Evento actualizado');
