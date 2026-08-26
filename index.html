@@ -10,27 +10,23 @@ body { font-family: system-ui, sans-serif; background: #f4f4f8; color: #1a1a2e; 
 /* Custom fix para celulares - REESCRITO SIN TOCAR ESTRUCTURA DE MESES */
 @media (max-width: 600px) {
   .fecha-intermedia {
-  background: #b8ed0f;
+  background: #7bfbaa;
   color: #000;
   font-weight: 700;
   padding: 6px 9px;
   border-radius: 12px;
   display: block;
-  margin-top: 10px;
   font-size: 11px;
   line-height: 1.25;
   cursor: pointer;
+  margin-top: auto;
   box-sizing: border-box;
 }
 
-.fecha-intermedia:hover {
-  transform: scale(1.02);
-}
+.fecha-intermedia:hover {transform: scale(1.02);}
 
 .fecha-intermedia-fecha {
-  font-weight: 900;
-  margin-right: 3px;
-}
+  background-color: #22c55e; box-sizing: border-box; width: 100%;color: #000000;font-weight:500;padding: 4px 6px; border-radius: 6px;display: block;margin-top: 4px;}
   .calendario-container, .grid-meses, table { display: flex !important;    flex-direction: column !important;    width: 100% !important;  }
   .clase-del-header-verde, th {    display: block !important;    width: 100% !important;    text-align: center;    box-sizing: border-box;  }
   .clase-de-la-celda-blanca, td {    display: block !important;    width: 100% !important;    height: auto !important;    min-height: 60px !important;  padding: 12px !important;    box-sizing: border-box;    border-bottom: 1px solid #eee;   }
